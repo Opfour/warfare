@@ -146,3 +146,102 @@ body {
 #cityPanel .close-btn:hover {
     color: #fff;
 }
+
+/* City Overview Section */
+.city-overview {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #444;
+}
+
+.city-overview h4 {
+    margin: 0 0 6px 0;
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.overview-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.rating-grade {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background: #555;
+}
+
+.rating-grade.grade-s { background: #c09a2c; }
+.rating-grade.grade-a { background: #2a8a2a; }
+.rating-grade.grade-b { background: #2a6a8a; }
+.rating-grade.grade-c { background: #6a6a2a; }
+.rating-grade.grade-d { background: #8a4a2a; }
+.rating-grade.grade-f { background: #8a2a2a; }
+
+.rating-score {
+    font-size: 13px;
+    color: #bbb;
+}
+
+/* Stat Bars */
+.stat-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: 6px;
+}
+
+.bar-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.bar-label {
+    width: 28px;
+    font-size: 9px;
+    color: #777;
+    text-align: right;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+.bar-track {
+    flex: 1;
+    height: 8px;
+    background: #222;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    min-width: 0;
+}
+
+.bar-pop        { background: #6a9fd8; }
+.bar-knowledge  { background: #a86ed8; }
+.bar-defense    { background: #d88a3e; }
+.bar-economics  { background: #4db84d; }
+.bar-satisfaction { background: #d84a4a; }
+
+.overview-summary {
+    font-size: 10px;
+    color: #888;
+    font-style: italic;
+    text-align: center;
+    padding-top: 2px;
+}

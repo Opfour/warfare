@@ -162,6 +162,49 @@ function updateStatusBar(text) {
     if (statusEl) statusEl.textContent = text;
 }
 
+function calculateCityRating(city) {
+    // Normalize population to 0-100 scale (5000 = max starting pop)
+    const popScore = Math.min(100, (city.population / 5000) * 100);
+
+    // Weighted composite score (0-100)
+    // Population is weighted higher since it drives conscription and tax base
+    const score = Math.round(
+        popScore * 0.25 +
+        city.knowledge * 0.20 +
+        city.defense * 0.20 +
+        city.economics * 0.25 +
+        city.satisfaction * 0.10
+    );
+
+    // Letter grade
+    let grade, gradeClass;
+    if (score >= 80) { grade = 'S'; gradeClass = 'grade-s'; }
+    else if (score >= 65) { grade = 'A'; gradeClass = 'grade-a'; }
+    else if (score >= 50) { grade = 'B'; gradeClass = 'grade-b'; }
+    else if (score >= 35) { grade = 'C'; gradeClass = 'grade-c'; }
+    else if (score >= 20) { grade = 'D'; gradeClass = 'grade-d'; }
+    else { grade = 'F'; gradeClass = 'grade-f'; }
+
+    // Identify strengths and weaknesses
+    const stats = { Population: popScore, Knowledge: city.knowledge, Defense: city.defense, Economics: city.economics, Satisfaction: city.satisfaction };
+    const sorted = Object.entries(stats).sort((a, b) => b[1] - a[1]);
+    const strongest = sorted[0][0];
+    const weakest = sorted[sorted.length - 1][0];
+
+    let summary;
+    if (score >= 65 && sorted[0][1] - sorted[sorted.length - 1][1] < 20) {
+        summary = 'Well-rounded, high-value target';
+    } else if (score >= 50) {
+        summary = `Strong ${strongest.toLowerCase()}, weak ${weakest.toLowerCase()}`;
+    } else if (score >= 30) {
+        summary = `Best asset: ${strongest.toLowerCase()}`;
+    } else {
+        summary = 'Low-value settlement';
+    }
+
+    return { score, grade, gradeClass, summary, popScore };
+}
+
 function updateCityPanel() {
     const panel = document.getElementById('cityPanel');
     const city = gameState.selectedCity;
@@ -180,6 +223,23 @@ function updateCityPanel() {
     document.getElementById('cityEconomics').textContent = city.economics;
     document.getElementById('citySatisfaction').textContent = city.satisfaction;
     document.getElementById('cityGarrison').textContent = city.garrison;
+
+    // Update overview rating
+    const rating = calculateCityRating(city);
+
+    const gradeEl = document.getElementById('cityGrade');
+    gradeEl.textContent = rating.grade;
+    gradeEl.className = 'rating-grade ' + rating.gradeClass;
+
+    document.getElementById('cityScore').textContent = `${rating.score}/100 composite`;
+    document.getElementById('citySummary').textContent = rating.summary;
+
+    // Update bars (all on 0-100 scale, pop normalized)
+    document.getElementById('barPop').style.width = `${rating.popScore}%`;
+    document.getElementById('barKnowledge').style.width = `${city.knowledge}%`;
+    document.getElementById('barDefense').style.width = `${city.defense}%`;
+    document.getElementById('barEconomics').style.width = `${city.economics}%`;
+    document.getElementById('barSatisfaction').style.width = `${city.satisfaction}%`;
 }
 
 function gameLoop() {
