@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warfare</title>
+    <link rel="stylesheet" href="css/warfare.css">
+</head>
+<body>
+    <!-- Menu Bar -->
+    <div id="menuBar">
+        <button id="btnNew">New</button>
+        <button id="btnOpen" disabled>Open</button>
+        <button id="btnSave" disabled>Save</button>
+        <button id="btnOptions" disabled>Options</button>
+        <button id="btnInvest" disabled>Invest</button>
+        <button id="btnList" disabled>List</button>
+        <button id="btnOrders" disabled>Orders</button>
+        <button id="btnMap" disabled>Map</button>
+        <button id="btnReports" disabled>Reports</button>
+        <button id="btnSectors" disabled>Sectors</button>
+        <div class="spacer"></div>
+        <button id="btnEndTurn" class="primary">End Turn</button>
+    </div>
+
+    <!-- Game Canvas -->
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- City Info Panel -->
+        <div id="cityPanel">
+            <button class="close-btn" id="closeCityPanel">&times;</button>
+            <h3 id="cityName">City Name</h3>
+            <div class="stat-row">
+                <span class="stat-label">Owner:</span>
+                <span class="stat-value" id="cityOwner">Neutral</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Population:</span>
+                <span class="stat-value" id="cityPop">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Knowledge:</span>
+                <span class="stat-value" id="cityKnowledge">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Defense:</span>
+                <span class="stat-value" id="cityDefense">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Economics:</span>
+                <span class="stat-value" id="cityEconomics">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Satisfaction:</span>
+                <span class="stat-value" id="citySatisfaction">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Garrison:</span>
+                <span class="stat-value" id="cityGarrison">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div id="statusBar">Ready</div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #0a0a0a;
+    color: #ddd;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Menu Bar */
+#menuBar {
+    display: flex;
+    align-items: center;
+    background: #2a2a2a;
+    border-bottom: 1px solid #444;
+    padding: 0;
+    height: 32px;
+    flex-shrink: 0;
+    z-index: 10;
+}
+
+#menuBar button {
+    background: none;
+    border: none;
+    border-right: 1px solid #444;
+    color: #ccc;
+    padding: 0 14px;
+    height: 100%;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+#menuBar button:hover {
+    background: #3a3a3a;
+    color: #fff;
+}
+
+#menuBar button:active {
+    background: #4a4a4a;
+}
+
+#menuBar button.primary {
+    background: #2a5a2a;
+    color: #8f8;
+    font-weight: bold;
+}
+
+#menuBar button.primary:hover {
+    background: #3a7a3a;
+}
+
+#menuBar .spacer {
+    flex: 1;
+}
+
+#menuBar .turn-info {
+    padding: 0 14px;
+    font-size: 12px;
+    color: #aaa;
+}
+
+/* Game Container */
+#gameContainer {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+#gameCanvas {
+    display: block;
+    cursor: default;
+}
+
+/* Status Bar */
+#statusBar {
+    height: 24px;
+    background: #222;
+    border-top: 1px solid #444;
+    padding: 3px 10px;
+    font-size: 12px;
+    color: #aaa;
+    flex-shrink: 0;
+}
+
+/* City Info Panel */
+#cityPanel {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 260px;
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 12px;
+    z-index: 20;
+    font-size: 12px;
+}
+
+#cityPanel.visible {
+    display: block;
+}
+
+#cityPanel h3 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #fff;
+    border-bottom: 1px solid #444;
+    padding-bottom: 4px;
+}
+
+#cityPanel .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 2px 0;
+}
+
+#cityPanel .stat-label {
+    color: #999;
+}
+
+#cityPanel .stat-value {
+    color: #ddd;
+    font-weight: bold;
+}
+
+#cityPanel .close-btn {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#cityPanel .close-btn:hover {
+    color: #fff;
+}
