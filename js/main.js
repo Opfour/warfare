@@ -6,7 +6,7 @@ import { InputHandler } from './input.js';
 import { generateMap } from './map.js';
 import { SeededRNG } from './utils.js';
 import { axialToPixel, hexKey, hexDistance } from './hex.js';
-import { DEFAULT_MAP_WIDTH, DEFAULT_MAP_HEIGHT, DEFAULT_CITY_COUNT, UNIT_TYPE, UNIT_STATS, PLAYER_COLORS, AI_PERSONALITY, getTechTier, getNextTechTier } from './config.js';
+import { DEFAULT_MAP_WIDTH, DEFAULT_MAP_HEIGHT, DEFAULT_CITY_COUNT, UNIT_TYPE, UNIT_STATS, PLAYER_COLORS, AI_PERSONALITY, getTechTier, getNextTechTier, getMapScale, MAP_SCALE } from './config.js';
 import { Player } from './player.js';
 import { createUnit, resetUnitIds, getRecruitableUnits } from './unit.js';
 import { TurnManager } from './turn.js';
@@ -56,6 +56,7 @@ function init() {
 
     // Wire up right-click context menu
     input.onRightClick = handleRightClick;
+    input.onCityCapture = handleCityCapture;
 
     // Wire up menu buttons
     document.getElementById('btnNew').addEventListener('click', () => showNewGameDialog());
@@ -84,50 +85,81 @@ function init() {
         }
     });
 
-    // Start default game
-    newGame({ opponents: 1, personality: 'AGGRESSIVE', cityCount: DEFAULT_CITY_COUNT });
-
+    // Show new game dialog on launch
     requestAnimationFrame(gameLoop);
+    showNewGameDialog();
 }
 
 function showNewGameDialog() {
-    const opponents = parseInt(prompt('Number of AI opponents (1-4):', '1')) || 1;
-    const personalities = Object.keys(AI_PERSONALITY);
-    const persStr = personalities.map((p, i) => `${i + 1}. ${p}`).join('\n');
-    const persIdx = parseInt(prompt(`AI Personality:\n${persStr}\nChoose (1-${personalities.length}):`, '2')) || 2;
-    const personality = personalities[Math.min(persIdx - 1, personalities.length - 1)];
-    const cityCount = parseInt(prompt('Number of cities (20-80):', '50')) || 50;
+    const overlay = document.getElementById('newGameOverlay');
+    const personalityField = document.getElementById('ngPersonalityField');
+    const multiNote = document.getElementById('ngMultiPersonalityNote');
+    const mapSizeLabel = document.getElementById('ngMapSize');
+    const radios = document.querySelectorAll('input[name="opponents"]');
 
-    newGame({
-        opponents: Math.min(4, Math.max(1, opponents)),
-        personality,
-        cityCount: Math.min(80, Math.max(20, cityCount)),
-    });
+    function updateUI() {
+        const count = parseInt(document.querySelector('input[name="opponents"]:checked').value);
+        const scale = getMapScale(count);
+        mapSizeLabel.textContent = `${scale.width} × ${scale.height} — ${scale.cities} cities, ${scale.regions} regions`;
+        if (count === 1) {
+            personalityField.style.display = '';
+            multiNote.style.display = 'none';
+        } else {
+            personalityField.style.display = 'none';
+            multiNote.style.display = '';
+        }
+    }
+
+    radios.forEach(r => r.addEventListener('change', updateUI));
+    updateUI();
+
+    overlay.style.display = 'flex';
+
+    // Cancel
+    document.getElementById('ngCancel').onclick = () => {
+        overlay.style.display = 'none';
+    };
+
+    // Start
+    document.getElementById('ngStart').onclick = () => {
+        const count = parseInt(document.querySelector('input[name="opponents"]:checked').value);
+        const personality = document.getElementById('ngPersonality').value;
+        overlay.style.display = 'none';
+        newGame({ opponents: count, personality });
+    };
 }
 
 function newGame(options = {}) {
-    const { opponents = 1, personality = 'AGGRESSIVE', cityCount = DEFAULT_CITY_COUNT } = options;
+    const { opponents = 1, personality = 'AGGRESSIVE', cityCount } = options;
+    const scale = getMapScale(opponents);
     const seed = Date.now();
     const rng = new SeededRNG(seed);
 
     resetUnitIds();
     aiPlayers.clear();
 
-    // Generate map
+    // Generate map scaled to player count
     gameState.map = generateMap(rng, {
-        width: DEFAULT_MAP_WIDTH,
-        height: DEFAULT_MAP_HEIGHT,
-        cityCount,
+        opponents,
+        cityCount: cityCount || scale.cities,
     });
 
     // Create players
     gameState.players = [];
     gameState.players.push(new Player(0, 'You', true));
+
+    // Cycle through personalities for multiple AI opponents
+    const personalityKeys = Object.keys(AI_PERSONALITY);
     for (let i = 1; i <= opponents; i++) {
-        const aiPersonality = AI_PERSONALITY[personality] || AI_PERSONALITY.AGGRESSIVE;
+        let persKey = personality;
+        // If multiple opponents, give each a different personality
+        if (opponents > 1) {
+            persKey = personalityKeys[(i - 1) % personalityKeys.length];
+        }
+        const aiPersonality = AI_PERSONALITY[persKey] || AI_PERSONALITY.AGGRESSIVE;
         const aiPlayer = new Player(i, `${aiPersonality.name} AI ${i}`, false, aiPersonality);
         gameState.players.push(aiPlayer);
-        aiPlayers.set(i, createAI(aiPlayer, personality));
+        aiPlayers.set(i, createAI(aiPlayer, persKey));
     }
 
     // Reset state
@@ -145,47 +177,115 @@ function newGame(options = {}) {
     // Set up camera bounds
     camera.setMapBounds(gameState.map.width, gameState.map.height);
 
-    // Assign starting cities — spread players apart
+    // Region-aware player placement — each player starts in a different region
     const cities = gameState.map.cities;
-    const usedCities = new Set();
+    const regions = gameState.map.regions || [];
+    const playerCount = gameState.players.length;
 
-    for (let p = 0; p < gameState.players.length; p++) {
-        let bestCity = null;
+    // Score regions by total city quality, pick the best spread-out ones
+    const regionScores = regions.map((region, idx) => {
+        const regionCities = cities.filter(c => c.regionId === idx);
+        const totalValue = regionCities.reduce((sum, c) =>
+            sum + c.population + c.economics * 50 + c.defense * 30, 0);
+        return { idx, cities: regionCities, totalValue, cityCount: regionCities.length };
+    }).filter(r => r.cityCount >= 3) // need at least 3 cities to start in a region
+      .sort((a, b) => b.totalValue - a.totalValue);
+
+    // Assign players to different regions (best regions first)
+    const usedRegions = new Set();
+    const playerRegions = [];
+
+    for (let p = 0; p < playerCount; p++) {
+        // Find the best region not already taken, preferring distance from used regions
+        let bestRegion = null;
         let bestScore = -Infinity;
 
-        for (const city of cities) {
-            if (usedCities.has(city.id)) continue;
+        for (const rs of regionScores) {
+            if (usedRegions.has(rs.idx)) continue;
 
+            // Distance bonus: prefer regions far from already-used ones
             let minDist = Infinity;
-            for (const usedId of usedCities) {
-                const usedCity = cities.find(c => c.id === usedId);
-                if (usedCity) {
-                    minDist = Math.min(minDist, hexDistance(city, usedCity));
+            for (const usedIdx of usedRegions) {
+                const usedRegionCities = cities.filter(c => c.regionId === usedIdx);
+                for (const uc of usedRegionCities) {
+                    for (const rc of rs.cities) {
+                        minDist = Math.min(minDist, hexDistance(uc, rc));
+                    }
                 }
             }
-            if (usedCities.size === 0) minDist = 10;
+            if (usedRegions.size === 0) minDist = 20;
 
-            const valueScore = (city.population + city.economics * 50 + city.defense * 30) / 1000;
-            const distScore = Math.min(minDist, 15);
-            const score = valueScore + distScore * 2;
-
+            const score = rs.totalValue / 1000 + Math.min(minDist, 30) * 3;
             if (score > bestScore) {
                 bestScore = score;
-                bestCity = city;
+                bestRegion = rs;
             }
         }
 
-        if (bestCity) {
-            bestCity.owner = p;
-            usedCities.add(bestCity.id);
-            gameState.players[p].homeCityId = bestCity.id;
+        if (bestRegion) {
+            usedRegions.add(bestRegion.idx);
+            playerRegions.push({ player: p, region: bestRegion });
+        }
+    }
 
-            // Create commander
-            gameState.units.push(createUnit(UNIT_TYPE.COMMANDER, p, bestCity));
-            // Starting scout
-            gameState.units.push(createUnit(UNIT_TYPE.SCOUT, p, bestCity));
-            // Starting defender
-            gameState.units.push(createUnit(UNIT_TYPE.DEFENDER, p, bestCity));
+    // For each player, pick best home city in their region and claim nearby cities
+    for (const { player: p, region } of playerRegions) {
+        // Sort region cities by quality
+        const sorted = [...region.cities].sort((a, b) =>
+            (b.population + b.economics * 50 + b.defense * 30) -
+            (a.population + a.economics * 50 + a.defense * 30)
+        );
+
+        // Best city is home city
+        const homeCity = sorted[0];
+        homeCity.owner = p;
+        gameState.players[p].homeCityId = homeCity.id;
+
+        // Give player 2 additional starting cities in same region
+        let extraCities = 0;
+        for (let i = 1; i < sorted.length && extraCities < 2; i++) {
+            if (sorted[i].owner == null) {
+                sorted[i].owner = p;
+                extraCities++;
+                // Place a defender in each extra city
+                gameState.units.push(createUnit(UNIT_TYPE.DEFENDER, p, sorted[i]));
+            }
+        }
+
+        // Create starting units at home city
+        gameState.units.push(createUnit(UNIT_TYPE.COMMANDER, p, homeCity));
+        gameState.units.push(createUnit(UNIT_TYPE.SCOUT, p, homeCity));
+        gameState.units.push(createUnit(UNIT_TYPE.DEFENDER, p, homeCity));
+        gameState.units.push(createUnit(UNIT_TYPE.ARMY_CORPS, p, homeCity));
+    }
+
+    // Fallback: if region assignment failed (fewer regions than players), use distance-based
+    const unplacedPlayers = gameState.players.filter(pl =>
+        !playerRegions.some(pr => pr.player === pl.id));
+    if (unplacedPlayers.length > 0) {
+        const usedCities = new Set(cities.filter(c => c.owner >= 0).map(c => c.id));
+        for (const player of unplacedPlayers) {
+            let bestCity = null;
+            let bestScore = -Infinity;
+            for (const city of cities) {
+                if (usedCities.has(city.id) || city.owner != null) continue;
+                let minDist = Infinity;
+                for (const uid of usedCities) {
+                    const uc = cities.find(c => c.id === uid);
+                    if (uc) minDist = Math.min(minDist, hexDistance(city, uc));
+                }
+                if (usedCities.size === 0) minDist = 10;
+                const score = (city.population + city.economics * 50) / 1000 + Math.min(minDist, 15) * 2;
+                if (score > bestScore) { bestScore = score; bestCity = city; }
+            }
+            if (bestCity) {
+                bestCity.owner = player.id;
+                usedCities.add(bestCity.id);
+                player.homeCityId = bestCity.id;
+                gameState.units.push(createUnit(UNIT_TYPE.COMMANDER, player.id, bestCity));
+                gameState.units.push(createUnit(UNIT_TYPE.SCOUT, player.id, bestCity));
+                gameState.units.push(createUnit(UNIT_TYPE.DEFENDER, player.id, bestCity));
+            }
         }
     }
 
@@ -199,7 +299,8 @@ function newGame(options = {}) {
         camera.centerOn(pos.x, pos.y);
     }
 
-    updateStatusBar(`Turn 1 — ${opponents} ${AI_PERSONALITY[personality].name} AI opponent(s). ${cities.length} cities. Right-click for actions.`);
+    const aiNames = gameState.players.filter(p => !p.isHuman).map(p => p.name).join(', ');
+    updateStatusBar(`Turn 1 — ${opponents} AI opponent(s): ${aiNames}. ${cities.length} cities. Right-click for actions.`);
 }
 
 // ─── Right-click Context Menu ─────────────────────────────────────
@@ -493,10 +594,7 @@ function showCaptureDialog(winner, capture, combatOverlay) {
         <div style="margin-top:8px;">`;
 
     if (capture.canAbsorb && capture.troops > 0) {
-        const maxAbsorb = Math.min(capture.troops, UNIT_STATS[winner.type].maxTroops - winner.troops);
-        if (maxAbsorb > 0) {
-            captureHtml += `<button onclick="window._captureAction('absorb')" style="margin:2px">Absorb ${maxAbsorb} troops</button>`;
-        }
+        captureHtml += `<button onclick="window._captureAction('absorb')" style="margin:2px">Absorb ${capture.troops} troops</button>`;
     }
     captureHtml += `<button onclick="window._captureAction('use_equip')" style="margin:2px">Use equipment (${equipText})</button>`;
     captureHtml += `<button onclick="window._captureAction('sell_equip')" style="margin:2px">Sell equipment (+${capture.equipment}g)</button>`;
@@ -627,7 +725,79 @@ function showGameOverDialog(won) {
 function endTurn() {
     if (gameState.phase !== 'playing') return;
 
+    // Snapshot AI unit positions before their turn
+    const aiUnitsBefore = new Map();
+    for (const unit of gameState.units) {
+        if (unit.owner !== 0) {
+            aiUnitsBefore.set(unit.id, { q: unit.q, r: unit.r });
+        }
+    }
+
     const log = turnManager.endTurn();
+
+    // Find AI units that moved or are new (recruited)
+    const aiActions = [];
+    for (const unit of gameState.units) {
+        if (unit.owner === 0) continue;
+        const before = aiUnitsBefore.get(unit.id);
+        if (!before) {
+            // Newly recruited
+            aiActions.push({ unit, action: 'recruit' });
+        } else if (before.q !== unit.q || before.r !== unit.r) {
+            // Moved
+            aiActions.push({ unit, action: 'move' });
+        }
+    }
+
+    // Also detect captures by checking cities that changed ownership
+    const aiCaptures = log.filter(l => l.includes('claimed') || l.includes('captured'));
+
+    // Disable End Turn button during AI replay
+    const endTurnBtn = document.getElementById('btnEndTurn');
+    endTurnBtn.disabled = true;
+
+    if (aiActions.length > 0) {
+        // Show AI actions one by one with camera pan
+        let actionIdx = 0;
+        const showDelay = 600; // ms per action
+
+        updateStatusBar('Opponent\'s turn...');
+
+        const showNextAction = () => {
+            if (actionIdx >= aiActions.length) {
+                // Done showing AI actions, resume player turn
+                finishEndTurn(log, endTurnBtn);
+                return;
+            }
+
+            const { unit, action } = aiActions[actionIdx];
+            const player = gameState.players[unit.owner];
+            const stats = UNIT_STATS[unit.type];
+            const pos = axialToPixel(unit.q, unit.r);
+
+            // Pan camera to this AI unit
+            camera.centerOn(pos.x, pos.y);
+
+            // Show what the AI did
+            const playerName = player ? player.name : 'AI';
+            if (action === 'recruit') {
+                updateStatusBar(`${playerName} recruited a ${stats.name}.`);
+            } else {
+                updateStatusBar(`${playerName}'s ${stats.name} moved.`);
+            }
+
+            actionIdx++;
+            setTimeout(showNextAction, showDelay);
+        };
+
+        showNextAction();
+    } else {
+        finishEndTurn(log, endTurnBtn);
+    }
+}
+
+function finishEndTurn(log, endTurnBtn) {
+    endTurnBtn.disabled = false;
 
     let statusMsg = `Turn ${gameState.turn}`;
     if (log.length > 0) {
@@ -639,10 +809,16 @@ function endTurn() {
 
     updateStatusBar(statusMsg);
 
+    // Pan camera back to player's home city
+    const homeCity = gameState.map.cities.find(c => c.id === player.homeCityId);
+    if (homeCity) {
+        const pos = axialToPixel(homeCity.q, homeCity.r);
+        camera.centerOn(pos.x, pos.y);
+    }
+
     // Show toast notifications for tech upgrades, revolts, etc.
     showTurnNotifications();
 
-    // Also notify revolts
     if (log.some(l => l.includes('Revolt'))) {
         for (const line of log) {
             if (line.includes('Revolt')) {
@@ -651,7 +827,7 @@ function endTurn() {
         }
     }
 
-    _lastInfoKey = null; // force info panel refresh
+    _lastInfoKey = null;
 
     if (gameState.phase === 'gameover') {
         showGameOverDialog(gameState.winner && gameState.winner.id === 0);
@@ -848,8 +1024,7 @@ function showReportsPanel() {
     const opponentInfo = gameState.players.filter(p => p.id !== 0).map(p => {
         const theirCities = gameState.map.cities.filter(c => c.owner === p.id);
         const theirUnits = gameState.units.filter(u => u.owner === p.id);
-        const theirTroops = theirUnits.reduce((sum, u) => sum + u.troops, 0);
-        return `<tr><td style="color:${PLAYER_COLORS[p.id]}">${p.name}</td><td>${p.alive ? 'Active' : 'Eliminated'}</td><td>${theirCities.length}</td><td>${theirUnits.length}</td><td>${theirTroops.toLocaleString()}</td></tr>`;
+        return `<tr><td style="color:${PLAYER_COLORS[p.id]}">${p.name}</td><td>${p.alive ? 'Active' : 'Eliminated'}</td><td>${theirCities.length}</td><td>${theirUnits.length}</td><td style="color:#888">???</td></tr>`;
     }).join('');
 
     let overlay = document.getElementById('reportsOverlay');
@@ -979,15 +1154,20 @@ function updateInfoPanel() {
                 </div>
                 <div class="unit-card-details">
                     <div class="unit-card-stat"><span>Owner:</span><span style="color:${ownerColor}">${isMine ? 'You' : gameState.players[unit.owner]?.name || '?'}</span></div>
+                    ${isMine ? `
                     <div class="unit-card-stat"><span>Troops:</span><span>${unit.troops}/${unit.maxTroops}</span></div>
                     <div class="unit-card-stat"><span>Moves:</span><span>${unit.movesRemaining}/${stats.move}</span></div>
                     <div class="unit-card-stat"><span>Attack:</span><span>${stats.attack}${unit.equipBonusAtk ? ` <span style="color:#8f8">+${unit.equipBonusAtk.toFixed(1)}</span>` : ''}</span></div>
                     <div class="unit-card-stat"><span>Defense:</span><span>${stats.defense}${unit.equipBonusDef ? ` <span style="color:#8cf">+${unit.equipBonusDef.toFixed(1)}</span>` : ''}</span></div>
                     ${unit.techName ? `<div class="unit-card-stat"><span>Tech:</span><span style="color:#ac8">${unit.techName} era</span></div>` : ''}
                     <div class="unit-card-stat"><span>Orders:</span><span>${unit.orders === 'move_to' && unit.moveTarget ? `moving to (${unit.moveTarget.q},${unit.moveTarget.r})` : unit.orders}</span></div>
-                    ${isMine && city && city.owner === 0 && unit.troops < stats.maxTroops && unit.type !== UNIT_TYPE.COMMANDER ? (() => {
+                    ` : `
+                    <div class="unit-card-stat"><span>Type:</span><span>${stats.name}</span></div>
+                    <div class="unit-card-stat"><span>Strength:</span><span style="color:#f88;">Unknown</span></div>
+                    `}
+                    ${isMine && city && city.owner === 0 && unit.troops < unit.maxTroops && unit.type !== UNIT_TYPE.COMMANDER ? (() => {
                         const costPerTroop = Math.max(1, Math.round(stats.cost / Math.max(1, stats.maxTroops) * (1 + (100 - city.economics) / 100)));
-                        const missing = stats.maxTroops - unit.troops;
+                        const missing = unit.maxTroops - unit.troops;
                         return `<div class="unit-card-stat"><span>Replenish:</span><span>${costPerTroop}g/troop (${missing} needed)</span></div>
                         <button class="unit-replenish-btn" data-unit-id="${unit.id}" data-cost="${costPerTroop}" style="margin:4px 0;padding:3px 8px;background:#2a4a2a;color:#8f8;border:1px solid #4a4a4a;border-radius:3px;cursor:pointer;font-size:11px;width:100%;">Replenish Troops</button>`;
                     })() : ''}
@@ -1070,7 +1250,7 @@ function updateInfoPanel() {
 
                 const player = gameState.players[0];
                 const stats = UNIT_STATS[unit.type];
-                const missing = stats.maxTroops - unit.troops;
+                const missing = unit.maxTroops - unit.troops;
                 const affordable = Math.floor(player.treasury / costPerTroop);
                 const toAdd = Math.min(missing, affordable);
 
@@ -1131,21 +1311,54 @@ function showManageTroopsDialog(hex, myUnits) {
             </div>`;
         }).join('');
 
-        // Build merge options: for each pair of units, offer merge
+        // Build merge options: for each pair of units, offer merge with type selection
         let mergeHtml = '';
         for (let i = 0; i < units.length; i++) {
             for (let j = i + 1; j < units.length; j++) {
                 const a = units[i], b = units[j];
                 const sa = UNIT_STATS[a.type], sb = UNIT_STATS[b.type];
                 const totalTroops = a.troops + b.troops;
-                // Can merge into either type
-                mergeHtml += `<div class="manage-merge-row">
-                    <span>${sa.symbol} ${sa.name} (${a.troops}) + ${sb.symbol} ${sb.name} (${b.troops})</span>
-                    <div style="margin-top:4px">
-                        <button class="merge-btn" data-from="${b.id}" data-into="${a.id}">Merge into ${sa.name} (${Math.min(totalTroops, sa.maxTroops)})</button>
-                        <button class="merge-btn" data-from="${a.id}" data-into="${b.id}">Merge into ${sb.name} (${Math.min(totalTroops, sb.maxTroops)})</button>
-                    </div>
-                </div>`;
+                const sameType = a.type === b.type;
+
+                if (sameType) {
+                    // Same type: simple merge, no type choice needed
+                    mergeHtml += `<div class="manage-merge-row">
+                        <span>${sa.symbol} ${sa.name} (${a.troops}) + ${sb.symbol} ${sb.name} (${b.troops})</span>
+                        <div style="margin-top:4px">
+                            <button class="merge-btn" data-from="${b.id}" data-into="${a.id}" data-type="${a.type}">Merge → ${sa.name} (${totalTroops})</button>
+                        </div>
+                    </div>`;
+                } else {
+                    // Different types: conversion based on cost-per-troop ratio
+                    // costPerTroop = unit cost / base maxTroops
+                    const costPerA = sa.cost / sa.maxTroops;
+                    const costPerB = sb.cost / sb.maxTroops;
+
+                    const allTypes = [a.type, b.type];
+                    const typeOptions = allTypes.map(t => {
+                        const s = UNIT_STATS[t];
+                        const costPer = s.cost / s.maxTroops;
+                        // Convert both unit's troops to this type's value
+                        const converted = Math.floor(a.troops * (costPerA / costPer) + b.troops * (costPerB / costPer));
+                        return `<option value="${t}" data-converted="${converted}">${s.symbol} ${s.name} (${converted} troops)</option>`;
+                    }).join('');
+
+                    // Default to first option's converted count
+                    const defaultCostPer = sa.cost / sa.maxTroops;
+                    const defaultConverted = Math.floor(a.troops * (costPerA / defaultCostPer) + b.troops * (costPerB / defaultCostPer));
+
+                    mergeHtml += `<div class="manage-merge-row">
+                        <span>${sa.symbol} ${sa.name} (${a.troops}) + ${sb.symbol} ${sb.name} (${b.troops})</span>
+                        <div style="margin-top:4px;font-size:11px;color:#888;">Troop count adjusts based on unit cost. Expensive types = fewer troops.</div>
+                        <div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                            <span style="font-size:12px;color:#aaa;">Merge as:</span>
+                            <select class="merge-type-select" data-a="${a.id}" data-b="${b.id}" style="background:#1a1a1a;color:#ddd;border:1px solid #4a4a4a;padding:4px 8px;border-radius:3px;">
+                                ${typeOptions}
+                            </select>
+                            <button class="merge-typed-btn" data-a="${a.id}" data-b="${b.id}">Merge</button>
+                        </div>
+                    </div>`;
+                }
             }
         }
 
@@ -1182,7 +1395,7 @@ function showManageTroopsDialog(hex, myUnits) {
         `;
         overlay.style.display = 'flex';
 
-        // Merge handlers
+        // Same-type merge handlers
         overlay.querySelectorAll('.merge-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const fromId = parseInt(btn.dataset.from);
@@ -1192,22 +1405,60 @@ function showManageTroopsDialog(hex, myUnits) {
                 if (!fromUnit || !intoUnit) return;
 
                 const intoStats = UNIT_STATS[intoUnit.type];
-                const transferred = Math.min(fromUnit.troops, intoStats.maxTroops - intoUnit.troops);
+                const transferred = fromUnit.troops;
                 intoUnit.troops += transferred;
                 intoUnit.maxTroops = Math.max(intoUnit.maxTroops, intoUnit.troops);
-                fromUnit.troops -= transferred;
+                fromUnit.troops = 0;
 
-                // If the remaining troops from the source exceed what was transferred,
-                // some couldn't fit — they stay. If source is empty, remove it.
-                if (fromUnit.troops <= 0) {
-                    const idx = gameState.units.indexOf(fromUnit);
-                    if (idx !== -1) gameState.units.splice(idx, 1);
-                }
+                const idx = gameState.units.indexOf(fromUnit);
+                if (idx !== -1) gameState.units.splice(idx, 1);
 
                 updateStatusBar(`Merged ${transferred} troops into ${intoStats.name}. Now ${intoUnit.troops} troops.`);
                 _lastInfoKey = null;
 
-                // Re-render the dialog with updated numbers
+                const remaining = gameState.units.filter(u => u.owner === 0 && u.q === hex.q && u.r === hex.r);
+                if (remaining.length < 2) {
+                    overlay.style.display = 'none';
+                } else {
+                    render();
+                }
+            });
+        });
+
+        // Cross-type merge handlers (player picks resulting type, with cost conversion)
+        overlay.querySelectorAll('.merge-typed-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const aId = parseInt(btn.dataset.a);
+                const bId = parseInt(btn.dataset.b);
+                const unitA = gameState.units.find(u => u.id === aId);
+                const unitB = gameState.units.find(u => u.id === bId);
+                if (!unitA || !unitB) return;
+
+                const select = btn.parentElement.querySelector('.merge-type-select');
+                const chosenType = select.value;
+                const chosenStats = UNIT_STATS[chosenType];
+
+                // Convert troops based on cost-per-troop ratio
+                const costPerA = UNIT_STATS[unitA.type].cost / UNIT_STATS[unitA.type].maxTroops;
+                const costPerB = UNIT_STATS[unitB.type].cost / UNIT_STATS[unitB.type].maxTroops;
+                const costPerTarget = chosenStats.cost / chosenStats.maxTroops;
+                const convertedTroops = Math.floor(
+                    unitA.troops * (costPerA / costPerTarget) +
+                    unitB.troops * (costPerB / costPerTarget)
+                );
+
+                // Unit A becomes the merged result
+                unitA.type = chosenType;
+                unitA.troops = convertedTroops;
+                unitA.maxTroops = convertedTroops;
+                unitB.troops = 0;
+
+                const idx = gameState.units.indexOf(unitB);
+                if (idx !== -1) gameState.units.splice(idx, 1);
+
+                updateStatusBar(`Merged into ${chosenStats.name} with ${convertedTroops} troops (adjusted for unit cost).`);
+                _lastInfoKey = null;
+
                 const remaining = gameState.units.filter(u => u.owner === 0 && u.q === hex.q && u.r === hex.r);
                 if (remaining.length < 2) {
                     overlay.style.display = 'none';
@@ -1240,9 +1491,10 @@ function showManageTroopsDialog(hex, myUnits) {
                 if (!fromUnit || !toUnit) return;
 
                 const toStats = UNIT_STATS[toUnit.type];
-                const maxTransfer = Math.min(amount, fromUnit.troops - 1, toStats.maxTroops - toUnit.troops);
+                // No hard cap — transfer up to requested amount (source keeps at least 1)
+                const maxTransfer = Math.min(amount, fromUnit.troops - 1);
                 if (maxTransfer < 1) {
-                    updateStatusBar('Cannot transfer — source needs at least 1 troop, or target is full.');
+                    updateStatusBar('Cannot transfer — source needs at least 1 troop.');
                     return;
                 }
 
@@ -1300,12 +1552,13 @@ function showRecruitDialog(city) {
     const splitRows = splittableUnits.map(u => {
         const stats = UNIT_STATS[u.type];
         return `
-        <div class="split-option" data-unit-id="${u.id}">
+        <div class="split-option" data-unit-id="${u.id}" style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin:4px 0;background:#252525;border:1px solid #3a3a3a;border-radius:4px;">
             <span class="recruit-symbol">${stats.symbol}</span>
-            <span class="recruit-name">${stats.name} (${u.troops} troops)</span>
-            <span class="recruit-qty">
-                Split off: <input type="number" class="split-amount" data-unit-id="${u.id}" min="1" max="${u.troops - 1}" value="${Math.floor(u.troops / 2)}" style="width:50px">
+            <span style="flex:1;font-weight:bold;color:#ddd;">${stats.name} (${u.troops} troops)</span>
+            <span>
+                <input type="number" class="split-amount" data-unit-id="${u.id}" min="1" max="${u.troops - 1}" value="${Math.floor(u.troops / 2)}" style="width:60px;background:#1a1a1a;color:#ddd;border:1px solid #4a4a4a;padding:3px 6px;border-radius:3px;">
             </span>
+            <button class="split-btn" data-unit-id="${u.id}" style="padding:4px 10px;background:#2a4a6a;color:#8cf;border:1px solid #4a4a4a;border-radius:3px;cursor:pointer;">Split</button>
         </div>`;
     }).join('');
 
@@ -1355,13 +1608,15 @@ function showRecruitDialog(city) {
     });
 
     // Split handlers
-    overlay.querySelectorAll('.split-option').forEach(el => {
-        el.addEventListener('click', () => {
-            const unitId = parseInt(el.dataset.unitId);
+    overlay.querySelectorAll('.split-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const unitId = parseInt(btn.dataset.unitId);
             const unit = gameState.units.find(u => u.id === unitId);
             if (!unit) return;
 
-            const amountInput = el.querySelector('.split-amount');
+            const row = btn.closest('.split-option');
+            const amountInput = row.querySelector('.split-amount');
             const splitCount = parseInt(amountInput.value) || 0;
 
             if (splitCount < 1 || splitCount >= unit.troops) {
@@ -1431,6 +1686,14 @@ function calculateCityRating(city) {
     return { score, grade, gradeClass, summary, popScore };
 }
 
+function handleCityCapture(unit, city, verb) {
+    const unitName = UNIT_STATS[unit.type].name;
+    showNotification(`${city.name} ${verb}!`, `Your ${unitName} has ${verb} ${city.name}.`, 'info');
+    updateStatusBar(`${unitName} ${verb} ${city.name}!`);
+    // Force info panel refresh
+    _lastInfoKey = null;
+}
+
 function updateStatusBar(text) {
     const statusEl = document.getElementById('statusBar');
     if (statusEl) statusEl.textContent = text;
@@ -1488,8 +1751,10 @@ function showTurnNotifications() {
 }
 
 function gameLoop() {
-    camera.update();
-    updateInfoPanel();
+    if (gameState.map) {
+        camera.update();
+        updateInfoPanel();
+    }
     renderer.draw(gameState, camera);
     requestAnimationFrame(gameLoop);
 }

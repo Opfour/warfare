@@ -2,6 +2,7 @@
 
 import { pixelToAxial, hexKey, hexNeighbors } from './hex.js';
 import { getMoveCost } from './config.js';
+import { tryCaptureCity } from './combat.js';
 
 export class InputHandler {
     constructor(canvas, camera, gameState) {
@@ -355,6 +356,16 @@ export class InputHandler {
             unit.movesRemaining = Math.max(0, unit.movesRemaining - next.cost);
             this.gameState.selectedHex = { q: unit.q, r: unit.r };
             stepIndex++;
+
+            // Check for city capture at each step
+            const captured = tryCaptureCity(unit, this.gameState.map, this.gameState.units);
+            if (captured) {
+                const wasNeutral = captured.previousOwner === null;
+                const verb = wasNeutral ? 'claimed' : 'captured';
+                if (this.onCityCapture) {
+                    this.onCityCapture(unit, captured.city, verb);
+                }
+            }
 
             setTimeout(step, stepDelay);
         };

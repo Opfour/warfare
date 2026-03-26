@@ -3,11 +3,22 @@ export const HEX_SIZE = 28; // pixels from center to corner
 export const HEX_WIDTH = Math.sqrt(3) * HEX_SIZE;
 export const HEX_HEIGHT = 2 * HEX_SIZE;
 
-// Default map settings — larger map for more spread-out cities
+// Default map settings
 export const DEFAULT_MAP_WIDTH = 60;
 export const DEFAULT_MAP_HEIGHT = 45;
 export const DEFAULT_CITY_COUNT = 50;
 export const DEFAULT_LAND_RATIO = 0.40;
+
+// Map scaling by opponent count — more players = bigger continent
+export const MAP_SCALE = [
+    { opponents: 1, width: 60,  height: 45,  cities: 50,  regions: 5  },
+    { opponents: 2, width: 80,  height: 60,  cities: 75,  regions: 7  },
+    { opponents: 3, width: 100, height: 75,  cities: 100, regions: 10 },
+];
+
+export function getMapScale(opponents) {
+    return MAP_SCALE.find(s => s.opponents === opponents) || MAP_SCALE[MAP_SCALE.length - 1];
+}
 
 // Terrain types
 export const TERRAIN = {
@@ -18,6 +29,9 @@ export const TERRAIN = {
     MOUNTAIN: 'mountain',
     SWAMP: 'swamp',
     BRIDGE: 'bridge',
+    RIVER: 'river',
+    DESERT: 'desert',
+    ISTHMUS: 'isthmus',
 };
 
 // Terrain colors
@@ -29,6 +43,9 @@ export const TERRAIN_COLORS = {
     [TERRAIN.MOUNTAIN]: '#8a8a7a',
     [TERRAIN.SWAMP]: '#3a6a5a',
     [TERRAIN.BRIDGE]: '#8a7a5a',
+    [TERRAIN.RIVER]: '#3377cc',
+    [TERRAIN.DESERT]: '#c4a94d',
+    [TERRAIN.ISTHMUS]: '#7a9a5a',
 };
 
 // Terrain symbols drawn on hex tiles for easy identification
@@ -40,6 +57,9 @@ export const TERRAIN_SYMBOLS = {
     [TERRAIN.MOUNTAIN]: '▲',
     [TERRAIN.SWAMP]: '≈',
     [TERRAIN.BRIDGE]: '═',
+    [TERRAIN.RIVER]: '≋',
+    [TERRAIN.DESERT]: '░',
+    [TERRAIN.ISTHMUS]: '⌇',
 };
 
 // Base terrain movement cost (1 = normal, higher = slower)
@@ -51,15 +71,15 @@ export const TERRAIN_MOVE_COST = {
     [TERRAIN.MOUNTAIN]: 3,
     [TERRAIN.SWAMP]: 3,
     [TERRAIN.BRIDGE]: 1,
+    [TERRAIN.RIVER]: 2,
+    [TERRAIN.DESERT]: 2,
+    [TERRAIN.ISTHMUS]: 1,
 };
 
 // Per-unit-type terrain cost overrides
-// Commander moves across any terrain at cost 1
-// Scouts are fast everywhere but still slowed by mountains
-// Mechanized/artillery are heavily penalized by rough terrain
 export const UNIT_TERRAIN_COST = {
-    [TERRAIN.OCEAN]: {},  // no one crosses ocean
-    [TERRAIN.PLAINS]: {}, // everyone pays 1
+    [TERRAIN.OCEAN]: {},
+    [TERRAIN.PLAINS]: {},
     [TERRAIN.HILLS]: {
         commander: 1, scout: 1, raider: 2, army_corps: 2,
         artillery: 3, mechanized: 3, defender: 2,
@@ -76,7 +96,16 @@ export const UNIT_TERRAIN_COST = {
         commander: 1, scout: 2, raider: 3, army_corps: 3,
         artillery: Infinity, mechanized: 4, defender: 3,
     },
-    [TERRAIN.BRIDGE]: {}, // everyone pays 1
+    [TERRAIN.BRIDGE]: {},
+    [TERRAIN.RIVER]: {
+        commander: 1, scout: 1, raider: 2, army_corps: 2,
+        artillery: 3, mechanized: 3, defender: 2,
+    },
+    [TERRAIN.DESERT]: {
+        commander: 1, scout: 2, raider: 2, army_corps: 3,
+        artillery: Infinity, mechanized: 2, defender: 3,
+    },
+    [TERRAIN.ISTHMUS]: {},
 };
 
 // Get movement cost for a specific unit type on a terrain
@@ -97,6 +126,9 @@ export const TERRAIN_DEFENSE_BONUS = {
     [TERRAIN.MOUNTAIN]: 1.5,
     [TERRAIN.SWAMP]: 0.8,
     [TERRAIN.BRIDGE]: 0.9,
+    [TERRAIN.RIVER]: 1.4,
+    [TERRAIN.DESERT]: 0.7,
+    [TERRAIN.ISTHMUS]: 1.6,
 };
 
 // Unit types

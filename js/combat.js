@@ -154,11 +154,10 @@ export function equipCaptured(unit, atkBonus, defBonus) {
 
 // Apply capture: absorb troops into winner
 export function absorbCaptured(winner, capturedTroops) {
-    const stats = UNIT_STATS[winner.type];
-    const canTake = Math.min(capturedTroops, stats.maxTroops - winner.troops);
-    winner.troops += canTake;
+    // No hard cap — unit absorbs all captured troops
+    winner.troops += capturedTroops;
     winner.maxTroops = Math.max(winner.maxTroops, winner.troops);
-    return canTake;
+    return capturedTroops;
 }
 
 // Apply surrender: defender gives up, attacker captures everything

@@ -84,4 +84,4 @@ If you played the original game and have suggestions/corrections drop an issue a
 
 ## License
 
-MIT
+AGPL-3.0 — See [LICENSE](LICENSE) for details.

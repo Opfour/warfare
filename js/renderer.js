@@ -23,6 +23,7 @@ export class Renderer {
     // Main draw call
     draw(gameState, camera) {
         this.clear();
+        if (!gameState.map) return;
         const ctx = this.ctx;
 
         ctx.save();

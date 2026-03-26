@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Warfare</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="css/warfare.css">
 </head>
 <body>
@@ -77,6 +78,42 @@
             <div id="unitsSection" style="display:none">
                 <h4>Units Here</h4>
                 <div id="unitsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Game Dialog -->
+    <div id="newGameOverlay" class="dialog-overlay" style="display:none">
+        <div class="dialog-box" id="newGameDialog">
+            <h2>New Game</h2>
+            <div class="dialog-field">
+                <span class="field-label">AI Opponents:</span>
+                <div class="radio-group" id="ngOpponents">
+                    <label><input type="radio" name="opponents" value="1" checked> 1</label>
+                    <label><input type="radio" name="opponents" value="2"> 2</label>
+                    <label><input type="radio" name="opponents" value="3"> 3</label>
+                </div>
+            </div>
+            <div class="dialog-field" id="ngPersonalityField">
+                <label for="ngPersonality">AI Personality:</label>
+                <select id="ngPersonality">
+                    <option value="GENTEEL">Genteel — cautious, economic</option>
+                    <option value="AGGRESSIVE" selected>Aggressive — military focus</option>
+                    <option value="INSANE">Insane — reckless, maximum aggression</option>
+                    <option value="BENEVOLENT">Benevolent — development focus</option>
+                </select>
+            </div>
+            <div class="dialog-field" id="ngMultiPersonalityNote" style="display:none">
+                <span class="field-label">AI Personalities:</span>
+                <span class="note">Each opponent gets a different personality automatically</span>
+            </div>
+            <div class="dialog-field">
+                <span class="field-label">Map Size:</span>
+                <span class="note" id="ngMapSize">60 × 45 — 50 cities, 5 regions</span>
+            </div>
+            <div class="dialog-buttons">
+                <button id="ngCancel" class="btn-secondary">Cancel</button>
+                <button id="ngStart" class="btn-primary">Start Game</button>
             </div>
         </div>
     </div>

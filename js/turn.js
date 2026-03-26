@@ -4,7 +4,7 @@ import { UNIT_STATS, TERRAIN_MOVE_COST } from './config.js';
 import { getMoveCost } from './config.js';
 import { hexKey, hexNeighbors } from './hex.js';
 import { collectTaxes, applyCityGrowth, checkRevolts } from './investment.js';
-import { checkCommanderDeath } from './combat.js';
+import { checkCommanderDeath, tryCaptureCity } from './combat.js';
 import { ORDER } from './orders.js';
 
 export class TurnManager {
@@ -123,6 +123,13 @@ export class TurnManager {
                 unit.q = step.q;
                 unit.r = step.r;
                 unit.movesRemaining -= step.cost;
+
+                // Capture any neutral/undefended city along the way
+                const captured = tryCaptureCity(unit, gs.map, gs.units);
+                if (captured) {
+                    const verb = captured.previousOwner === null ? 'claimed' : 'captured';
+                    this.turnLog.push(`${UNIT_STATS[unit.type].name} ${verb} ${captured.city.name}!`);
+                }
             }
 
             // Check if arrived

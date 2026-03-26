@@ -835,6 +835,151 @@ body {
     background: #3a6a8a;
 }
 
+/* New Game Dialog */
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 500;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dialog-box {
+    background: #1e1e1e;
+    border: 1px solid #555;
+    border-radius: 8px;
+    padding: 24px 32px;
+    min-width: 380px;
+    max-width: 500px;
+    color: #ddd;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.dialog-box h2 {
+    margin: 0 0 18px 0;
+    color: #fff;
+    text-align: center;
+    font-size: 22px;
+    letter-spacing: 1px;
+}
+
+.dialog-field {
+    margin: 14px 0;
+}
+
+.dialog-field > label,
+.dialog-field > .field-label {
+    display: block;
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 6px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dialog-field select {
+    width: 100%;
+    background: #252525;
+    color: #ddd;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.dialog-field select:hover {
+    border-color: #666;
+}
+
+.dialog-field .note {
+    font-size: 12px;
+    color: #888;
+    font-style: italic;
+}
+
+.radio-group {
+    display: flex;
+    gap: 4px;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #252525;
+    border: 1px solid #444;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.radio-group label:hover {
+    background: #2a3a4a;
+    border-color: #5a8abf;
+}
+
+.radio-group input[type="radio"] {
+    accent-color: #4a8abf;
+}
+
+.radio-group input[type="radio"]:checked + .radio-label,
+.radio-group label:has(input:checked) {
+    background: #2a3a4a;
+    border-color: #5a8abf;
+    color: #8cf;
+}
+
+.dialog-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: 1px solid #333;
+}
+
+.btn-primary {
+    background: #2a5a2a !important;
+    color: #8f8 !important;
+    border: 1px solid #4a8a4a !important;
+    padding: 8px 24px !important;
+    border-radius: 4px !important;
+    cursor: pointer;
+    font-size: 14px !important;
+    font-weight: bold;
+    transition: background 0.15s;
+}
+
+.btn-primary:hover {
+    background: #3a7a3a !important;
+}
+
+.btn-secondary {
+    background: #333 !important;
+    color: #bbb !important;
+    border: 1px solid #555 !important;
+    padding: 8px 24px !important;
+    border-radius: 4px !important;
+    cursor: pointer;
+    font-size: 14px !important;
+    transition: background 0.15s;
+}
+
+.btn-secondary:hover {
+    background: #444 !important;
+    color: #fff !important;
+}
+
 /* Game Over Dialog */
 .gameover-dialog {
     text-align: center;
