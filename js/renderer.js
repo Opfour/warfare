@@ -1,7 +1,8 @@
 // Canvas rendering: hex grid, terrain, cities, units, overlays
 
-import { HEX_SIZE, TERRAIN_COLORS, NEUTRAL_COLOR, PLAYER_COLORS, UNIT_STATS } from './config.js';
+import { HEX_SIZE, TERRAIN_COLORS, TERRAIN_SYMBOLS, NEUTRAL_COLOR, PLAYER_COLORS, UNIT_STATS } from './config.js';
 import { axialToPixel, hexCorners, hexKey } from './hex.js';
+import { calculateCityTaxIncome } from './investment.js';
 
 export class Renderer {
     constructor(canvas) {
@@ -55,9 +56,6 @@ export class Renderer {
 
         ctx.restore();
 
-        // Draw scroll arrows (screen-space)
-        this.drawScrollArrows(camera);
-
         // Draw HUD info
         this.drawHUD(gameState);
     }
@@ -89,6 +87,16 @@ export class Renderer {
             ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
             ctx.lineWidth = 0.5;
             ctx.stroke();
+
+            // Terrain symbol
+            const symbol = TERRAIN_SYMBOLS[tile.terrain];
+            if (symbol) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+                ctx.font = 'bold 11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(symbol, x, y);
+            }
         }
     }
 
@@ -112,7 +120,7 @@ export class Renderer {
             ctx.lineWidth = 1;
             ctx.strokeRect(x - size, y - size, size * 2, size * 2);
 
-            // City name (only when zoomed in enough or hovered)
+            // City name
             ctx.fillStyle = '#fff';
             ctx.strokeStyle = '#000';
             ctx.lineWidth = 2;
@@ -128,28 +136,67 @@ export class Renderer {
         const { units } = gameState;
         if (!units) return;
 
+        // Group units by hex to offset stacked units
+        const hexGroups = new Map();
         for (const unit of units) {
-            const { x, y } = axialToPixel(unit.q, unit.r);
+            const key = `${unit.q},${unit.r}`;
+            if (!hexGroups.has(key)) hexGroups.set(key, []);
+            hexGroups.get(key).push(unit);
+        }
+
+        for (const [key, group] of hexGroups) {
+            const { x, y } = axialToPixel(group[0].q, group[0].r);
             if (!camera.isVisible(x - HEX_SIZE, y - HEX_SIZE, HEX_SIZE * 2, HEX_SIZE * 2)) continue;
 
-            const color = PLAYER_COLORS[unit.owner] || '#fff';
-            const stats = UNIT_STATS[unit.type];
+            // Offset each unit in the stack
+            const count = group.length;
+            for (let i = 0; i < count; i++) {
+                const unit = group[i];
+                const color = PLAYER_COLORS[unit.owner] || '#fff';
+                const stats = UNIT_STATS[unit.type];
 
-            // Unit circle background
-            ctx.beginPath();
-            ctx.arc(x, y - 8, 8, 0, Math.PI * 2);
-            ctx.fillStyle = color;
-            ctx.fill();
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 1;
-            ctx.stroke();
+                // Stack offset: spread horizontally if multiple units
+                let ox = 0, oy = -8;
+                if (count === 2) {
+                    ox = (i === 0 ? -6 : 6);
+                } else if (count === 3) {
+                    ox = (i - 1) * 8;
+                } else if (count > 3) {
+                    // 2x2 grid
+                    ox = (i % 2 === 0 ? -6 : 6);
+                    oy = (i < 2 ? -12 : -2);
+                }
 
-            // Unit symbol
-            ctx.fillStyle = '#fff';
-            ctx.font = '10px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(stats.symbol, x, y - 8);
+                const ux = x + ox;
+                const uy = y + oy;
+
+                // Unit circle
+                ctx.beginPath();
+                ctx.arc(ux, uy, 7, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Unit symbol
+                ctx.fillStyle = '#fff';
+                ctx.font = '9px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(stats.symbol, ux, uy);
+            }
+
+            // Show unit count badge if more than 3
+            if (count > 3) {
+                ctx.fillStyle = '#fff';
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.font = 'bold 8px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.strokeText(`x${count}`, x, y + 8);
+                ctx.fillText(`x${count}`, x, y + 8);
+            }
         }
     }
 
@@ -174,52 +221,6 @@ export class Renderer {
         ctx.stroke();
     }
 
-    drawScrollArrows(camera) {
-        const ctx = this.ctx;
-        const w = this.canvas.width;
-        const h = this.canvas.height;
-        const arrowSize = 15;
-        const alpha = 0.4;
-
-        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-
-        // Left arrow
-        if (camera.scrollLeft) {
-            ctx.beginPath();
-            ctx.moveTo(20, h / 2);
-            ctx.lineTo(20 + arrowSize, h / 2 - arrowSize);
-            ctx.lineTo(20 + arrowSize, h / 2 + arrowSize);
-            ctx.fill();
-        }
-
-        // Right arrow
-        if (camera.scrollRight) {
-            ctx.beginPath();
-            ctx.moveTo(w - 20, h / 2);
-            ctx.lineTo(w - 20 - arrowSize, h / 2 - arrowSize);
-            ctx.lineTo(w - 20 - arrowSize, h / 2 + arrowSize);
-            ctx.fill();
-        }
-
-        // Up arrow
-        if (camera.scrollUp) {
-            ctx.beginPath();
-            ctx.moveTo(w / 2, 20);
-            ctx.lineTo(w / 2 - arrowSize, 20 + arrowSize);
-            ctx.lineTo(w / 2 + arrowSize, 20 + arrowSize);
-            ctx.fill();
-        }
-
-        // Down arrow
-        if (camera.scrollDown) {
-            ctx.beginPath();
-            ctx.moveTo(w / 2, h - 20);
-            ctx.lineTo(w / 2 - arrowSize, h - 20 - arrowSize);
-            ctx.lineTo(w / 2 + arrowSize, h - 20 - arrowSize);
-            ctx.fill();
-        }
-    }
-
     drawHUD(gameState) {
         const ctx = this.ctx;
 
@@ -229,8 +230,30 @@ export class Renderer {
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
 
+        const player = gameState.players && gameState.players[gameState.currentPlayer];
+        const gold = player ? player.treasury : 0;
         const turnText = `Turn: ${gameState.turn || 1}`;
         ctx.fillText(turnText, 10, this.canvas.height - 25);
+
+        // Calculate income per turn
+        let income = 0;
+        if (player && gameState.map) {
+            for (const city of gameState.map.cities) {
+                if (city.owner === player.id) {
+                    income += calculateCityTaxIncome(city);
+                }
+            }
+            income = Math.floor(income);
+        }
+
+        // Gold + income display — larger and prominent
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 20px monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`Gold: ${gold}`, this.canvas.width - 15, this.canvas.height - 28);
+        ctx.fillStyle = '#8fcc5a';
+        ctx.font = 'bold 14px monospace';
+        ctx.fillText(`+${income}/turn`, this.canvas.width - 15, this.canvas.height - 8);
 
         // Hovered hex info
         if (gameState.hoverHex) {

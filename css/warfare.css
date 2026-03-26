@@ -80,6 +80,80 @@ body {
 }
 
 /* Status Bar */
+/* Notification Toasts */
+#notificationArea {
+    position: fixed;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    pointer-events: none;
+}
+
+.notification-toast {
+    background: #1a2a3a;
+    border: 1px solid #3a6a9a;
+    border-radius: 6px;
+    padding: 10px 20px;
+    color: #ddd;
+    font-size: 13px;
+    max-width: 500px;
+    text-align: center;
+    pointer-events: auto;
+    cursor: pointer;
+    animation: toast-in 0.3s ease-out;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.notification-toast.tech-upgrade {
+    border-color: #4a9a4a;
+    background: #1a2a1a;
+}
+
+.notification-toast.tech-upgrade .toast-title {
+    color: #8f8;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.notification-toast.revolt {
+    border-color: #9a4a4a;
+    background: #2a1a1a;
+}
+
+.notification-toast.info {
+    border-color: #6a6a3a;
+    background: #2a2a1a;
+}
+
+.notification-toast .toast-title {
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.notification-toast .toast-desc {
+    font-size: 11px;
+    color: #999;
+}
+
+.notification-toast.fade-out {
+    animation: toast-out 0.3s ease-in forwards;
+}
+
+@keyframes toast-in {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toast-out {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-20px); }
+}
+
 #statusBar {
     height: 24px;
     background: #222;
@@ -90,13 +164,15 @@ body {
     flex-shrink: 0;
 }
 
-/* City Info Panel */
-#cityPanel {
+/* Info Panel (right side — city + units at selected hex) */
+#infoPanel {
     display: none;
     position: absolute;
     top: 10px;
     right: 10px;
-    width: 260px;
+    width: 270px;
+    max-height: calc(100% - 20px);
+    overflow-y: auto;
     background: rgba(30, 30, 30, 0.95);
     border: 1px solid #555;
     border-radius: 4px;
@@ -105,11 +181,11 @@ body {
     font-size: 12px;
 }
 
-#cityPanel.visible {
+#infoPanel.visible {
     display: block;
 }
 
-#cityPanel h3 {
+#infoPanel h3 {
     margin: 0 0 8px 0;
     font-size: 14px;
     color: #fff;
@@ -117,22 +193,30 @@ body {
     padding-bottom: 4px;
 }
 
-#cityPanel .stat-row {
+#infoPanel h4 {
+    margin: 8px 0 4px 0;
+    font-size: 11px;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#infoPanel .stat-row {
     display: flex;
     justify-content: space-between;
     padding: 2px 0;
 }
 
-#cityPanel .stat-label {
+#infoPanel .stat-label {
     color: #999;
 }
 
-#cityPanel .stat-value {
+#infoPanel .stat-value {
     color: #ddd;
     font-weight: bold;
 }
 
-#cityPanel .close-btn {
+#infoPanel .close-btn {
     position: absolute;
     top: 6px;
     right: 8px;
@@ -143,8 +227,104 @@ body {
     cursor: pointer;
 }
 
-#cityPanel .close-btn:hover {
+#infoPanel .close-btn:hover {
     color: #fff;
+}
+
+/* Unit cards in info panel */
+.unit-card {
+    background: #252525;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    padding: 6px 8px;
+    margin: 4px 0;
+    cursor: pointer;
+    transition: border-color 0.15s;
+}
+
+.unit-card:hover {
+    border-color: #5a8abf;
+}
+
+.unit-card.selected {
+    border-color: #8cf;
+    background: #2a3a4a;
+}
+
+.unit-card-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.unit-card-symbol {
+    font-size: 16px;
+    width: 22px;
+    text-align: center;
+}
+
+.unit-card-name {
+    flex: 1;
+    font-weight: bold;
+    color: #ddd;
+    font-size: 12px;
+}
+
+.unit-card-toggle {
+    font-size: 10px;
+    color: #888;
+    cursor: pointer;
+}
+
+.unit-card-details {
+    display: none;
+    margin-top: 6px;
+    padding-top: 4px;
+    border-top: 1px solid #333;
+    font-size: 11px;
+}
+
+.unit-card-details.open {
+    display: block;
+}
+
+.unit-card-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 1px 0;
+    color: #aaa;
+}
+
+.unit-card-stat span:last-child {
+    color: #ddd;
+}
+
+.unit-card-orders {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-top: 4px;
+}
+
+.unit-card-orders button {
+    padding: 2px 6px;
+    font-size: 10px;
+    background: #333;
+    color: #bbb;
+    border: 1px solid #444;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.unit-card-orders button:hover {
+    background: #444;
+    color: #fff;
+}
+
+.unit-card-orders button.active {
+    background: #2a5a8a;
+    color: #8cf;
+    border-color: #4a8abf;
 }
 
 /* City Overview Section */
@@ -244,4 +424,481 @@ body {
     font-style: italic;
     text-align: center;
     padding-top: 2px;
+}
+
+/* Modal Overlays */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-overlay > div {
+    background: #1e1e1e;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 20px;
+    min-width: 300px;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    color: #ddd;
+}
+
+.modal-overlay h2 {
+    margin: 0 0 12px 0;
+    color: #fff;
+    text-align: center;
+}
+
+.modal-overlay h3 {
+    margin: 0 0 12px 0;
+    font-size: 15px;
+    color: #fff;
+    border-bottom: 1px solid #444;
+    padding-bottom: 6px;
+}
+
+.modal-overlay h4 {
+    margin: 12px 0 6px 0;
+    font-size: 12px;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.modal-overlay p {
+    margin: 6px 0;
+    font-size: 13px;
+    color: #bbb;
+}
+
+.modal-overlay button {
+    background: #333;
+    color: #ddd;
+    border: 1px solid #555;
+    padding: 6px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.15s;
+}
+
+.modal-overlay button:hover {
+    background: #444;
+    color: #fff;
+}
+
+/* Combat Dialog */
+.combat-dialog {
+    min-width: 360px;
+}
+
+.combat-sides {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin: 12px 0;
+}
+
+.combat-side {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    background: #252525;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.combat-symbol {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 18px;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
+.combat-vs {
+    font-size: 18px;
+    font-weight: bold;
+    color: #888;
+}
+
+.combat-odds {
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    margin-top: 4px;
+}
+
+.combat-outlook {
+    text-align: center;
+    font-size: 13px;
+    color: #cca;
+    font-style: italic;
+    margin: 6px 0 4px 0;
+}
+
+.combat-matchup {
+    text-align: center;
+    font-size: 11px;
+    color: #8ac;
+    margin: 0 0 12px 0;
+}
+
+.combat-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.combat-buttons button:first-child {
+    background: #5a2a2a;
+    color: #f88;
+}
+.combat-buttons button:first-child:hover {
+    background: #7a3a3a;
+}
+
+.combat-log {
+    max-height: 120px;
+    overflow-y: auto;
+    font-size: 11px;
+    color: #aaa;
+    background: #111;
+    border-radius: 3px;
+    padding: 6px;
+}
+
+.combat-log div {
+    padding: 1px 0;
+}
+
+/* Invest Dialog */
+.invest-dialog {
+    min-width: 340px;
+}
+
+.invest-dialog input[type="range"] {
+    width: 160px;
+    vertical-align: middle;
+    accent-color: #4a8a4a;
+}
+
+.invest-row {
+    margin: 8px 0;
+    font-size: 13px;
+}
+
+.invest-row label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.invest-row .inv-val {
+    min-width: 36px;
+    text-align: right;
+    color: #8f8;
+    font-weight: bold;
+}
+
+.invest-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.invest-buttons button:first-child {
+    background: #2a5a2a;
+    color: #8f8;
+}
+.invest-buttons button:first-child:hover {
+    background: #3a7a3a;
+}
+
+/* Orders Dialog */
+.orders-dialog {
+    min-width: 300px;
+}
+
+.order-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.order-btn {
+    padding: 8px 14px !important;
+    font-size: 12px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.order-btn.active {
+    background: #2a5a8a !important;
+    color: #8cf !important;
+    border-color: #4a8abf !important;
+}
+
+/* List Dialog */
+.list-dialog {
+    min-width: 450px;
+}
+
+.list-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin: 6px 0;
+}
+
+.list-table th {
+    text-align: left;
+    padding: 4px 8px;
+    background: #252525;
+    color: #aaa;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #444;
+}
+
+.list-table td {
+    padding: 4px 8px;
+    border-bottom: 1px solid #2a2a2a;
+    color: #ccc;
+}
+
+.list-table tr:hover td {
+    background: #252525;
+}
+
+/* Reports Dialog */
+.reports-dialog {
+    min-width: 420px;
+}
+
+.report-section {
+    margin: 10px 0;
+    padding: 8px;
+    background: #252525;
+    border-radius: 4px;
+}
+
+.report-section .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    font-size: 13px;
+}
+
+.report-section .stat-row span:first-child {
+    color: #999;
+}
+
+.report-section .stat-row span:last-child {
+    color: #ddd;
+    font-weight: bold;
+}
+
+/* Recruit Dialog */
+.recruit-dialog {
+    min-width: 360px;
+}
+
+.recruit-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    margin: 4px 0;
+    background: #252525;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.recruit-option:hover {
+    background: #2a3a2a;
+    border-color: #4a8a4a;
+}
+
+.recruit-symbol {
+    font-size: 20px;
+    width: 30px;
+    text-align: center;
+}
+
+.recruit-name {
+    flex: 1;
+    font-weight: bold;
+    color: #ddd;
+}
+
+.recruit-stats {
+    font-size: 11px;
+    color: #888;
+}
+
+.recruit-cost {
+    font-weight: bold;
+    color: #cca;
+    min-width: 40px;
+    text-align: right;
+}
+
+/* Manage Troops Dialog */
+.manage-unit-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    margin: 3px 0;
+    background: #252525;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+}
+
+.manage-merge-row {
+    padding: 8px 10px;
+    margin: 4px 0;
+    background: #252530;
+    border: 1px solid #3a3a4a;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.manage-merge-row .merge-btn {
+    margin: 2px 4px 2px 0;
+    padding: 4px 10px;
+    font-size: 11px;
+    background: #2a4a2a;
+    color: #8f8;
+    border: 1px solid #4a4a4a;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.manage-merge-row .merge-btn:hover {
+    background: #3a6a3a;
+}
+
+.manage-transfer-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    margin: 4px 0;
+    background: #252530;
+    border: 1px solid #3a3a4a;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.manage-transfer-row select,
+.manage-transfer-row input {
+    background: #1a1a1a;
+    color: #ddd;
+    border: 1px solid #4a4a4a;
+    padding: 3px 6px;
+    border-radius: 3px;
+}
+
+.manage-transfer-row #transferBtn {
+    padding: 4px 12px;
+    background: #2a4a6a;
+    color: #8cf;
+    border: 1px solid #4a4a4a;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.manage-transfer-row #transferBtn:hover {
+    background: #3a6a8a;
+}
+
+/* Game Over Dialog */
+.gameover-dialog {
+    text-align: center;
+    min-width: 300px;
+}
+
+.gameover-dialog h2 {
+    font-size: 28px;
+    margin-bottom: 16px;
+}
+
+.gameover-dialog p {
+    margin: 8px 0;
+}
+
+.gameover-dialog button {
+    margin-top: 16px;
+    padding: 8px 32px;
+    font-size: 14px;
+}
+
+/* Right-click Context Menu */
+#contextMenu {
+    display: none;
+    position: fixed;
+    z-index: 200;
+    background: #1e1e1e;
+    border: 1px solid #555;
+    border-radius: 4px;
+    min-width: 180px;
+    max-width: 260px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    padding: 4px 0;
+    font-size: 13px;
+}
+
+.ctx-item {
+    padding: 6px 14px;
+    color: #ddd;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.ctx-item:hover {
+    background: #2a5a8a;
+    color: #fff;
+}
+
+.ctx-sub {
+    padding-left: 28px;
+    font-size: 12px;
+    color: #bbb;
+}
+
+.ctx-sub:hover {
+    color: #fff;
+}
+
+.ctx-group-label {
+    padding: 5px 14px 2px 14px;
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-top: 1px solid #333;
+    margin-top: 2px;
 }

@@ -27,72 +27,62 @@
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
 
-        <!-- City Info Panel -->
-        <div id="cityPanel">
-            <button class="close-btn" id="closeCityPanel">&times;</button>
-            <h3 id="cityName">City Name</h3>
-            <div class="stat-row">
-                <span class="stat-label">Owner:</span>
-                <span class="stat-value" id="cityOwner">Neutral</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Population:</span>
-                <span class="stat-value" id="cityPop">0</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Knowledge:</span>
-                <span class="stat-value" id="cityKnowledge">0</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Defense:</span>
-                <span class="stat-value" id="cityDefense">0</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Economics:</span>
-                <span class="stat-value" id="cityEconomics">0</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Satisfaction:</span>
-                <span class="stat-value" id="citySatisfaction">0</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Garrison:</span>
-                <span class="stat-value" id="cityGarrison">0</span>
+        <!-- Info Panel (right side) — shows city + units at selected hex -->
+        <div id="infoPanel">
+            <button class="close-btn" id="closeInfoPanel">&times;</button>
+
+            <!-- City section (shown when a city is at selected hex) -->
+            <div id="citySection" style="display:none">
+                <h3 id="cityName">City Name</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Owner:</span>
+                    <span class="stat-value" id="cityOwner">Neutral</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Population:</span>
+                    <span class="stat-value" id="cityPop">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Knowledge:</span>
+                    <span class="stat-value" id="cityKnowledge">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Defense:</span>
+                    <span class="stat-value" id="cityDefense">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Economics:</span>
+                    <span class="stat-value" id="cityEconomics">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Satisfaction:</span>
+                    <span class="stat-value" id="citySatisfaction">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Garrison:</span>
+                    <span class="stat-value" id="cityGarrison">0</span>
+                </div>
+                <div class="city-overview">
+                    <h4>City Rating</h4>
+                    <div class="overview-rating">
+                        <span class="rating-grade" id="cityGrade">A</span>
+                        <span class="rating-score" id="cityScore">0</span>
+                    </div>
+                    <div class="overview-summary" id="citySummary">Balanced city</div>
+                </div>
+                <div id="recruitBtnWrap"></div>
             </div>
 
-            <!-- Quick Overview -->
-            <div class="city-overview">
-                <h4>City Rating</h4>
-                <div class="overview-rating">
-                    <span class="rating-grade" id="cityGrade">A</span>
-                    <span class="rating-score" id="cityScore">0</span>
-                </div>
-                <div class="stat-bars">
-                    <div class="bar-row">
-                        <span class="bar-label">POP</span>
-                        <div class="bar-track"><div class="bar-fill bar-pop" id="barPop"></div></div>
-                    </div>
-                    <div class="bar-row">
-                        <span class="bar-label">KNO</span>
-                        <div class="bar-track"><div class="bar-fill bar-knowledge" id="barKnowledge"></div></div>
-                    </div>
-                    <div class="bar-row">
-                        <span class="bar-label">DEF</span>
-                        <div class="bar-track"><div class="bar-fill bar-defense" id="barDefense"></div></div>
-                    </div>
-                    <div class="bar-row">
-                        <span class="bar-label">ECO</span>
-                        <div class="bar-track"><div class="bar-fill bar-economics" id="barEconomics"></div></div>
-                    </div>
-                    <div class="bar-row">
-                        <span class="bar-label">SAT</span>
-                        <div class="bar-track"><div class="bar-fill bar-satisfaction" id="barSatisfaction"></div></div>
-                    </div>
-                </div>
-                <div class="overview-summary" id="citySummary">Balanced city</div>
+            <!-- Units section (shown when units are at selected hex) -->
+            <div id="unitsSection" style="display:none">
+                <h4>Units Here</h4>
+                <div id="unitsList"></div>
             </div>
         </div>
     </div>
+
+    <!-- Notification Toasts -->
+    <div id="notificationArea"></div>
 
     <!-- Status Bar -->
     <div id="statusBar">Ready</div>
