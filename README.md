@@ -80,6 +80,8 @@ warfare/
 
 Warfare 1.0 was a Windows 3.1 turn-based strategy game released in 1995. This remake preserves the core gameplay — hex grid, city economics, 7 unit types, AI personalities — while modernizing the interface for the browser. If the HTML5 version plays well, a standalone desktop version (Rust/egui) may follow.
 
+If you played the original game and have suggestions/corrections drop an issue and we'll review and implement the changes if it improves gameplay!
+
 ## License
 
 MIT
