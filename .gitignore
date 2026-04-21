@@ -14,3 +14,7 @@ node_modules/
 credentials.json
 token.pickle
 *.secret
+
+# OpenClaw credentials
+.openclaw/
+openclaw.json
