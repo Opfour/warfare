@@ -1,6 +1,6 @@
 // Player model
 
-import { PLAYER_COLORS } from './config.js';
+import { PLAYER_COLORS, SCORE } from './config.js';
 
 export class Player {
     constructor(id, name, isHuman = false, personality = null) {
@@ -12,6 +12,26 @@ export class Player {
         this.homeCityId = null;
         this.alive = true;
         this.color = PLAYER_COLORS[id] || '#888';
+        this._score = 0;
+        this._scoreLog = []; // score events for HUD notification
+    }
+
+    // Award points for a scored event. reason is a human-readable string.
+    awardScore(points, reason) {
+        this._score += points;
+        this._scoreLog.push({ points, reason });
+        return this._score;
+    }
+
+    get score() {
+        return this._score;
+    }
+
+    // Consume and return accumulated score events
+    consumeScoreLog() {
+        const log = this._scoreLog;
+        this._scoreLog = [];
+        return log;
     }
 
     // Get all cities owned by this player
@@ -32,6 +52,40 @@ export class Player {
         }
         return Math.floor(income);
     }
+}
+
+// ─── Hall of Fame (localStorage top-5 scores) ──────────────────────
+const HOF_KEY = 'warfare_hof';
+const HOF_MAX = 5;
+
+export function getHallOfFame() {
+    try {
+        const raw = localStorage.getItem(HOF_KEY);
+        if (!raw) return [];
+        const data = JSON.parse(raw);
+        return Array.isArray(data) ? data.slice(0, HOF_MAX) : [];
+    } catch {
+        return [];
+    }
+}
+
+// Try to add a score to the Hall of Fame.
+// Returns { hall: [...], qualified: boolean }
+export function addToHallOfFame(name, score, difficulty, turns) {
+    const entries = getHallOfFame();
+    const entry = { name, score, difficulty, turns, date: Date.now() };
+
+    entries.push(entry);
+    entries.sort((a, b) => b.score - a.score);
+
+    const qualified = entries.indexOf(entry) < HOF_MAX;
+    const trimmed = entries.slice(0, HOF_MAX);
+    try {
+        localStorage.setItem(HOF_KEY, JSON.stringify(trimmed));
+    } catch {
+        // localStorage unavailable — return in-memory list
+    }
+    return { hall: trimmed, qualified };
 }
 
 // Calculate income from a single city

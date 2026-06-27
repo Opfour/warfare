@@ -1,5 +1,5 @@
 // Game constants and balance values
-export const HEX_SIZE = 28; // pixels from center to corner
+export const HEX_SIZE = 40; // pixels from center to corner
 export const HEX_WIDTH = Math.sqrt(3) * HEX_SIZE;
 export const HEX_HEIGHT = 2 * HEX_SIZE;
 
@@ -16,8 +16,43 @@ export const MAP_SCALE = [
     { opponents: 3, width: 100, height: 75,  cities: 100, regions: 10 },
 ];
 
+// Optional larger map sizes for long games — selectable in new game dialog
+export const MAP_SIZE_OPTIONS = [
+    { label: 'Standard', width: 60,  height: 45,  cities: 50,  regions: 5  },
+    { label: 'Large',    width: 100, height: 75,  cities: 100, regions: 10 },
+    { label: 'Huge',      width: 120, height: 90,  cities: 200, regions: 14 },
+];
+
 export function getMapScale(opponents) {
     return MAP_SCALE.find(s => s.opponents === opponents) || MAP_SCALE[MAP_SCALE.length - 1];
+}
+
+// ─── Sector System ─────────────────────────────────────────────
+// The map is divided into a grid of Sectors. Controlling all towns
+// in a sector grants tax bonuses to towns in and around it.
+export const SECTOR_GRID_SIZES = [
+    { opponents: 1, grid: 5 },
+    { opponents: 2, grid: 5 },
+    { opponents: 3, grid: 6 },
+];
+
+// Sector grid sizes for optional larger maps
+export const SECTOR_GRID_BY_MAP_WIDTH = {
+    60: 5,
+    80: 5,
+    100: 6,
+    120: 8,
+};
+
+// Tax bonus per adjacent controlled sector (same leader)
+export const SECTOR_TAX_BONUS = 0.20;
+
+// Multiplier added when the town's own sector is controlled
+export const SECTOR_OWN_BONUS = 0.15;
+
+export function getSectorGridSize(opponents) {
+    const config = SECTOR_GRID_SIZES.find(s => s.opponents === opponents);
+    return config ? config.grid : 5;
 }
 
 // Terrain types
@@ -168,6 +203,116 @@ export const COMBAT_MATCHUP = {
     [UNIT_TYPE.MECHANIZED]: { commander: 1.8, defender: 1.5, scout: 2.0, army_corps: 1.2, raider: 1.5, artillery: 1.8, mechanized: 1.0 },
 };
 
+// ─── Difficulty System ─────────────────────────────────────────────
+// Difficulty levels control AI economic multipliers, fog-of-war
+// visibility, and starting disposition toward the human player.
+//
+// taxMult     — multiplier on AI tax income
+// growthMult  — multiplier on AI city growth (population, knowledge, etc.)
+// techMult    — multiplier on AI knowledge/tech advancement
+// visibility  — 'none' = all AI units visible, 'standard' = normal fog,
+//               'reduced' = AI units only visible within 3 hexes,
+//               'minimal' = AI units only visible when adjacent
+// hostileStart — AI begins hostile toward the human player
+export const DIFFICULTY = {
+    EASY: {
+        name: 'Easy',
+        taxMult: 0.8,
+        growthMult: 0.8,
+        techMult: 0.8,
+        visibility: 'none',
+        hostileStart: false,
+    },
+    NORMAL: {
+        name: 'Normal',
+        taxMult: 1.0,
+        growthMult: 1.0,
+        techMult: 1.0,
+        visibility: 'standard',
+        hostileStart: false,
+    },
+    HARD: {
+        name: 'Hard',
+        taxMult: 1.3,
+        growthMult: 1.3,
+        techMult: 1.3,
+        visibility: 'reduced',
+        hostileStart: false,
+    },
+    KILL_THE_HUMAN: {
+        name: 'KILL THE HUMAN',
+        taxMult: 1.6,
+        growthMult: 1.6,
+        techMult: 1.6,
+        visibility: 'minimal',
+        hostileStart: true,
+    },
+};
+
+export const DIFFICULTY_KEYS = ['EASY', 'NORMAL', 'HARD', 'KILL_THE_HUMAN'];
+
+// Get a difficulty config by key name
+export function getDifficulty(key) {
+    return DIFFICULTY[key] || DIFFICULTY.NORMAL;
+}
+
+// ─── Scoring System ─────────────────────────────────────────────────
+export const SCORE = {
+    COMBAT_VICTORY: 25,
+    LEADER_KILL: 10000,
+    TOWN_PER_TURN: 100,
+    SECTOR_PER_TURN: 250,
+};
+
+// ─── AI Temperament System ────────────────────────────────────────
+// Each AI leader has a temperament that determines how quickly their
+// relationship with other leaders degrades and recovers.
+// degradeMult  — multiplier applied to relationship degradation (higher = faster anger)
+// recoverMult  — multiplier applied to relationship recovery per turn (higher = faster forgiveness)
+export const TEMPERAMENT = {
+    FORGIVING: {
+        name: 'Forgiving',
+        degradeMult: 0.5,
+        recoverMult: 2.0,
+    },
+    NORMAL: {
+        name: 'Normal',
+        degradeMult: 1.0,
+        recoverMult: 1.0,
+    },
+    QUICK_TO_ANGER: {
+        name: 'Quick to Anger',
+        degradeMult: 1.5,
+        recoverMult: 0.7,
+    },
+    VENGEFUL: {
+        name: 'Vengeful',
+        degradeMult: 2.0,
+        recoverMult: 0.3,
+    },
+};
+
+export const TEMPERAMENT_KEYS = ['FORGIVING', 'NORMAL', 'QUICK_TO_ANGER', 'VENGEFUL'];
+
+// Reaction stages — relationship levels between AI leaders.
+// Index increases = worse relationship. 0 = Neutral, max = "MUST KILL".
+export const REACTION_STAGES = [
+    { level: 0, name: 'Neutral' },
+    { level: 1, name: 'Miffed' },
+    { level: 2, name: 'Unhappy' },
+    { level: 3, name: 'Annoyed' },
+    { level: 4, name: 'Angry' },
+    { level: 5, name: 'Hate' },
+    { level: 6, name: 'Despise' },
+    { level: 7, name: 'MUST KILL' },
+];
+
+// Points needed to advance from one stage to the next (cumulative)
+export const REACTION_DEGRADE_POINTS = 10;   // points per attack to degrade
+export const REACTION_WINNER_BONUS = 2;       // extra degrade points when that leader is winning
+export const REACTION_RECOVER_PER_TURN = 1;   // base recovery per turn
+export const REACTION_ATTACK_OTHERS_BONUS = 2; // recovery when a leader attacks someone else
+
 // AI personality presets
 export const AI_PERSONALITY = {
     GENTEEL: {
@@ -283,3 +428,145 @@ export function getNextTechTier(knowledge) {
     }
     return null;
 }
+
+// ─── Town Events System ────────────────────────────────────────────
+// Base probability that a ruled town will experience an event per turn.
+// The original Warfare (1995) uses a random chance; ~15% per town per turn
+// keeps events impactful without being overwhelming.
+export const EVENT_CHANCE = 0.15;
+
+// Town event definitions.
+// Each event has:
+//   name       — short display name
+//   polarity   — 'positive' or 'negative' (used for rubber-banding & toast CSS)
+//   description — flavour text
+//   effects    — object describing changes to city attributes
+//                Negative magnitude for population/garrison is a fraction (proportion lost).
+//                Positive population/garrison is a flat number added.
+//                For other stats (defense, knowledge, economics, satisfaction),
+//                the value is a flat +/− delta.
+export const TOWN_EVENTS = [
+    // ── Negative events ──
+    {
+        name: 'Plague',
+        polarity: 'negative',
+        description: 'A devastating plague sweeps through the town.',
+        effects: { population: -0.25, satisfaction: -10 },
+    },
+    {
+        name: 'Flu',
+        polarity: 'negative',
+        description: 'A flu outbreak affects a portion of the population.',
+        effects: { population: -0.08 },
+    },
+    {
+        name: 'Arson',
+        polarity: 'negative',
+        description: 'Fires destroy large portions of the town!',
+        effects: { defense: -10, economics: -5, population: -0.05 },
+    },
+    {
+        name: 'Terrorist Bombing',
+        polarity: 'negative',
+        description: 'Bombings cripple defense and destroy labs.',
+        effects: { defense: -15, knowledge: -8 },
+    },
+    {
+        name: 'Sabotage',
+        polarity: 'negative',
+        description: 'Enemy agents sabotage town defenses.',
+        effects: { defense: -5 },
+    },
+    {
+        name: 'Bacteriological Accident',
+        polarity: 'negative',
+        description: 'A lab accident releases a dangerous bacteria.',
+        effects: { population: -0.15, knowledge: -3 },
+    },
+    {
+        name: 'Earthquake',
+        polarity: 'negative',
+        description: 'A powerful earthquake devastates the town!',
+        effects: { population: -0.10, defense: -10, economics: -5, garrison: -0.10 },
+    },
+    {
+        name: 'Accident',
+        polarity: 'negative',
+        description: 'A terrible accident claims many lives.',
+        effects: { population: -0.05, satisfaction: -5 },
+    },
+    {
+        name: 'Minor Uprising',
+        polarity: 'negative',
+        description: 'Discontented citizens stage a minor uprising.',
+        effects: { satisfaction: -15, garrison: -0.05 },
+    },
+    {
+        name: 'Famine',
+        polarity: 'negative',
+        description: 'Failed harvests lead to widespread famine.',
+        effects: { population: -0.10, satisfaction: -10 },
+    },
+
+    // ── Positive events ──
+    {
+        name: 'Brilliant Advance',
+        polarity: 'positive',
+        description: 'A brilliant advance greatly increases defense and technology!',
+        effects: { defense: 15, knowledge: 12 },
+    },
+    {
+        name: 'Minor Technical Advance',
+        polarity: 'positive',
+        description: 'A minor technical advance improves the town.',
+        effects: { defense: 5, knowledge: 5 },
+    },
+    {
+        name: 'Investments Pay Off',
+        polarity: 'positive',
+        description: 'Investments yield a handsome economic return.',
+        effects: { economics: 10 },
+    },
+    {
+        name: 'New Shield Dome',
+        polarity: 'positive',
+        description: 'A new shield dome strengthens town defenses.',
+        effects: { defense: 12 },
+    },
+    {
+        name: 'Enemy Technology Stolen',
+        polarity: 'positive',
+        description: 'Spies steal valuable enemy technology!',
+        effects: { knowledge: 10 },
+    },
+    {
+        name: 'Town Expansion',
+        polarity: 'positive',
+        description: 'The town expands, fueling population growth.',
+        effects: { population: 200, economics: 5 },
+    },
+    {
+        name: 'Economic Boom',
+        polarity: 'positive',
+        description: 'A sudden economic boom enriches the town.',
+        effects: { economics: 8, satisfaction: 10 },
+    },
+    {
+        name: 'Golden Harvest',
+        polarity: 'positive',
+        description: 'A bountiful harvest brings prosperity.',
+        effects: { population: 150, satisfaction: 10 },
+    },
+    {
+        name: 'Refugees Arrive',
+        polarity: 'positive',
+        description: 'Refugees from distant lands increase the population.',
+        effects: { population: 300, satisfaction: -3 },
+    },
+    {
+        name: 'Cultural Renaissance',
+        polarity: 'positive',
+        description: 'A cultural renaissance uplifts the entire town.',
+        effects: { satisfaction: 15, knowledge: 5, economics: 3 },
+    },
+];

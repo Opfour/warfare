@@ -6,13 +6,16 @@ import { InputHandler } from './input.js';
 import { generateMap } from './map.js';
 import { SeededRNG } from './utils.js';
 import { axialToPixel, hexKey, hexDistance } from './hex.js';
-import { DEFAULT_MAP_WIDTH, DEFAULT_MAP_HEIGHT, DEFAULT_CITY_COUNT, UNIT_TYPE, UNIT_STATS, PLAYER_COLORS, AI_PERSONALITY, getTechTier, getNextTechTier, getMapScale, MAP_SCALE } from './config.js';
-import { Player } from './player.js';
-import { createUnit, resetUnitIds, getRecruitableUnits } from './unit.js';
+import { DEFAULT_MAP_WIDTH, DEFAULT_MAP_HEIGHT, DEFAULT_CITY_COUNT, UNIT_TYPE, UNIT_STATS, PLAYER_COLORS, AI_PERSONALITY, getTechTier, getNextTechTier, getMapScale, MAP_SCALE, MAP_SIZE_OPTIONS, DIFFICULTY, SCORE, SECTOR_TAX_BONUS, SECTOR_OWN_BONUS } from './config.js';
+import { Player, getHallOfFame, addToHallOfFame } from './player.js';
+import { createUnit, resetUnitIds, getRecruitableUnits, splitUnit, getUnitDisplayName } from './unit.js';
 import { TurnManager } from './turn.js';
-import { createAI } from './ai.js';
+import { createAI, resetRelationships, notifyAttack, notifyWinner } from './ai.js';
 import { runCombatRound, tryCaptureCity, checkCommanderDeath, getCombatPreview, offerTruce, processSurrender, calculateCapture, absorbCaptured, equipCaptured } from './combat.js';
 import { ORDER, setOrder, setMoveTarget } from './orders.js';
+import { FogOfWar, FOG_DIFFICULTY } from './fog.js';
+import { getHint, resetHints } from './hints.js';
+import { recalculateSectorOwnership } from './sectors.js';
 
 // Game state — single source of truth
 const gameState = {
@@ -31,9 +34,21 @@ const gameState = {
     hoverHex: null,
     movementRange: null,
     moveToPickUnit: null, // unit waiting for destination click
+    eventsEnabled: true,  // town events toggle (On/Off)
+
+    // Fog of War
+    fogOfWar: new FogOfWar(FOG_DIFFICULTY.NORMAL),
+    fogDifficulty: FOG_DIFFICULTY.NORMAL,  // current difficulty setting
 };
 
 let renderer, camera, input, turnManager;
+// Map difficulty visibility strings to fog difficulty levels
+const VIS_TO_FOG = {
+    'none': FOG_DIFFICULTY.EASY,
+    'standard': FOG_DIFFICULTY.NORMAL,
+    'reduced': FOG_DIFFICULTY.HARD,
+    'minimal': FOG_DIFFICULTY.HARD,
+};
 const aiPlayers = new Map();
 
 function init() {
@@ -73,9 +88,41 @@ function init() {
     });
 
     // Enable previously disabled buttons
-    for (const id of ['btnInvest', 'btnList', 'btnOrders', 'btnReports']) {
+    for (const id of ['btnInvest', 'btnList', 'btnOrders', 'btnReports', 'btnSectors', 'btnEvents', 'btnFog']) {
         document.getElementById(id).disabled = false;
     }
+
+    // Events toggle button
+    document.getElementById('btnEvents').addEventListener('click', () => {
+        gameState.eventsEnabled = !gameState.eventsEnabled;
+        const btn = document.getElementById('btnEvents');
+        btn.textContent = `Events: ${gameState.eventsEnabled ? 'On' : 'Off'}`;
+        updateStatusBar(`Town events ${gameState.eventsEnabled ? 'enabled' : 'disabled'}.`);
+    });
+
+    // Fog of War toggle button
+    document.getElementById('btnFog').addEventListener('click', () => {
+        const enabled = gameState.fogOfWar.toggle();
+        const btn = document.getElementById('btnFog');
+        btn.textContent = `Fog: ${enabled ? 'On' : 'Off'}`;
+        // Recalculate visibility immediately so the map updates
+        gameState.fogOfWar.updateVisibility(gameState);
+        _lastInfoKey = null; // force info panel refresh
+        updateStatusBar(`Fog of War ${enabled ? 'enabled' : 'disabled'}.`);
+    });
+
+    // Sectors toggle button
+    document.getElementById('btnSectors').addEventListener('click', () => {
+        renderer.showSectors = !renderer.showSectors;
+        const btn = document.getElementById('btnSectors');
+        btn.classList.toggle('active-toggle', renderer.showSectors);
+        updateStatusBar(`Sector overlay ${renderer.showSectors ? 'on' : 'off'}.`);
+    });
+
+    // Strategy hints dismiss button
+    document.getElementById('hintDismiss').addEventListener('click', () => {
+        document.getElementById('hintBar').style.display = 'none';
+    });
 
     // Close context menu on any click outside it
     document.addEventListener('mousedown', (e) => {
@@ -95,12 +142,19 @@ function showNewGameDialog() {
     const personalityField = document.getElementById('ngPersonalityField');
     const multiNote = document.getElementById('ngMultiPersonalityNote');
     const mapSizeLabel = document.getElementById('ngMapSize');
+    const mapSizeSelect = document.getElementById('ngMapSizeSelect');
     const radios = document.querySelectorAll('input[name="opponents"]');
 
     function updateUI() {
         const count = parseInt(document.querySelector('input[name="opponents"]:checked').value);
         const scale = getMapScale(count);
-        mapSizeLabel.textContent = `${scale.width} × ${scale.height} — ${scale.cities} cities, ${scale.regions} regions`;
+        // Update label based on selected map size option (if dropdown exists)
+        if (mapSizeSelect) {
+            const opt = MAP_SIZE_OPTIONS[parseInt(mapSizeSelect.value)];
+            mapSizeLabel.textContent = `${opt.width} × ${opt.height} — ${opt.cities} cities, ${opt.regions} regions`;
+        } else {
+            mapSizeLabel.textContent = `${scale.width} × ${scale.height} — ${scale.cities} cities, ${scale.regions} regions`;
+        }
         if (count === 1) {
             personalityField.style.display = '';
             multiNote.style.display = 'none';
@@ -111,6 +165,7 @@ function showNewGameDialog() {
     }
 
     radios.forEach(r => r.addEventListener('change', updateUI));
+    if (mapSizeSelect) mapSizeSelect.addEventListener('change', updateUI);
     updateUI();
 
     overlay.style.display = 'flex';
@@ -124,24 +179,41 @@ function showNewGameDialog() {
     document.getElementById('ngStart').onclick = () => {
         const count = parseInt(document.querySelector('input[name="opponents"]:checked').value);
         const personality = document.getElementById('ngPersonality').value;
+        const difficultyEl = document.querySelector('input[name="difficulty"]:checked');
+        const difficultyKey = difficultyEl ? difficultyEl.value : 'NORMAL';
+        let mapSizeOverride = null;
+        const mapSizeSelect = document.getElementById('ngMapSizeSelect');
+        if (mapSizeSelect && mapSizeSelect.value !== '0') {
+            mapSizeOverride = MAP_SIZE_OPTIONS[parseInt(mapSizeSelect.value)];
+        }
         overlay.style.display = 'none';
-        newGame({ opponents: count, personality });
+        newGame({ opponents: count, personality, difficultyKey, mapSizeOverride });
     };
 }
 
 function newGame(options = {}) {
-    const { opponents = 1, personality = 'AGGRESSIVE', cityCount } = options;
-    const scale = getMapScale(opponents);
+    const { opponents = 1, personality = 'AGGRESSIVE', cityCount, difficultyKey = 'NORMAL', mapSizeOverride = null } = options;
+    const scale = mapSizeOverride || getMapScale(opponents);
+
+    // Store difficulty and configure fog
+    gameState.difficulty = difficultyKey;
+    const diffConfig = DIFFICULTY[difficultyKey] || DIFFICULTY.NORMAL;
+    gameState.fogDifficulty = VIS_TO_FOG[diffConfig.visibility] || FOG_DIFFICULTY.NORMAL;
+
     const seed = Date.now();
     const rng = new SeededRNG(seed);
 
     resetUnitIds();
     aiPlayers.clear();
+    resetHints();
 
-    // Generate map scaled to player count
+    // Generate map — use map size override if selected, otherwise scale by opponents
     gameState.map = generateMap(rng, {
         opponents,
         cityCount: cityCount || scale.cities,
+        width: mapSizeOverride ? scale.width : undefined,
+        height: mapSizeOverride ? scale.height : undefined,
+        regions: mapSizeOverride ? scale.regions : undefined,
     });
 
     // Create players
@@ -160,6 +232,11 @@ function newGame(options = {}) {
         const aiPlayer = new Player(i, `${aiPersonality.name} AI ${i}`, false, aiPersonality);
         gameState.players.push(aiPlayer);
         aiPlayers.set(i, createAI(aiPlayer, persKey));
+    }
+
+    // Set each player's _gameState reference
+    for (const player of gameState.players) {
+        player._gameState = gameState;
     }
 
     // Reset state
@@ -289,6 +366,11 @@ function newGame(options = {}) {
         }
     }
 
+    // Recalculate sector ownership after all cities are assigned
+    if (gameState.map.sectors) {
+        recalculateSectorOwnership(gameState.map.sectors, gameState.map.cities);
+    }
+
     // Create turn manager
     turnManager = new TurnManager(gameState, aiPlayers);
 
@@ -298,6 +380,14 @@ function newGame(options = {}) {
         const pos = axialToPixel(playerCity.q, playerCity.r);
         camera.centerOn(pos.x, pos.y);
     }
+
+    // Initialize Fog of War for the new game
+    gameState.fogOfWar.reset(gameState.fogDifficulty);
+    gameState.fogOfWar.updateVisibility(gameState);
+
+    // Update fog button label
+    const fogBtn = document.getElementById('btnFog');
+    if (fogBtn) fogBtn.textContent = `Fog: ${gameState.fogOfWar.enabled ? 'On' : 'Off'}`;
 
     const aiNames = gameState.players.filter(p => !p.isHuman).map(p => p.name).join(', ');
     updateStatusBar(`Turn 1 — ${opponents} AI opponent(s): ${aiNames}. ${cities.length} cities. Right-click for actions.`);
@@ -659,6 +749,14 @@ function cleanupCombat(attacker, defender) {
             if (defender.type) updateStatusBar(`Enemy ${UNIT_STATS[defender.type].name} destroyed!`);
         }
 
+        // Award score for human player combat victories
+        if (attacker.owner === 0 && attacker.troops > 0) {
+            gameState.players[0].awardScore(SCORE.COMBAT_VICTORY, 'Unit victory');
+            if (defender.type === UNIT_TYPE.COMMANDER) {
+                gameState.players[0].awardScore(SCORE.LEADER_KILL, 'Leader kill');
+            }
+        }
+
         if (attacker.troops > 0) {
             const capture = tryCaptureCity(attacker, gameState.map, gameState.units);
             if (capture) {
@@ -701,6 +799,27 @@ function cleanupCombat(attacker, defender) {
 // ─── Game Over ────────────────────────────────────────────────────
 
 function showGameOverDialog(won) {
+    // Add current score to Hall of Fame
+    const humanPlayer = gameState.players[0];
+    const scoreEntry = addToHallOfFame(
+        humanPlayer.name,
+        humanPlayer.score,
+        gameState.difficulty || 'NORMAL',
+        gameState.turn
+    );
+    const hall = scoreEntry.hall;
+
+    // Build Hall of Fame table rows
+    const hofRows = hall.map((entry, idx) => `
+        <tr>
+            <td>${idx + 1}</td>
+            <td>${entry.name}</td>
+            <td>${entry.score.toLocaleString()}</td>
+            <td>${entry.difficulty || '—'}</td>
+            <td>${entry.turns || '—'}</td>
+        </tr>
+    `).join('');
+
     let overlay = document.getElementById('gameOverOverlay');
     if (!overlay) {
         overlay = document.createElement('div');
@@ -713,7 +832,15 @@ function showGameOverDialog(won) {
         <div class="gameover-dialog">
             <h2>${won ? 'VICTORY!' : 'DEFEAT'}</h2>
             <p>${won ? 'All enemy commanders have been eliminated. You win!' : 'Your commander has fallen. The war is lost.'}</p>
-            <p>Turns: ${gameState.turn} | Cities held: ${gameState.map.cities.filter(c => c.owner === 0).length}</p>
+            <p>Turns: ${gameState.turn} | Cities held: ${gameState.map.cities.filter(c => c.owner === 0).length} | Score: ${humanPlayer.score.toLocaleString()}</p>
+            ${scoreEntry.qualified ? '<p style="color:#ffd700;font-weight:bold">★ New Hall of Fame entry!</p>' : ''}
+            <div class="hall-of-fame">
+                <h3>Hall of Fame</h3>
+                <table class="hof-table">
+                    <tr><th>#</th><th>Name</th><th>Score</th><th>Difficulty</th><th>Turns</th></tr>
+                    ${hofRows}
+                </table>
+            </div>
             <button onclick="document.getElementById('gameOverOverlay').style.display='none'">OK</button>
         </div>
     `;
@@ -827,7 +954,44 @@ function finishEndTurn(log, endTurnBtn) {
         }
     }
 
+    // Award per-turn score: +100 per city, +250 per sector (human player)
+    const humanPlayer = gameState.players[0];
+    if (humanPlayer.alive) {
+        const myCities = gameState.map.cities.filter(c => c.owner === 0);
+        humanPlayer.awardScore(myCities.length * SCORE.TOWN_PER_TURN, `${myCities.length} cities per turn`);
+        if (gameState.map.sectors) {
+            const mySectors = gameState.map.sectors.filter(s => s.owner === 0);
+            humanPlayer.awardScore(mySectors.length * SCORE.SECTOR_PER_TURN, `${mySectors.length} sectors per turn`);
+        }
+    }
+
+    // Show town event toasts for human player's cities
+    if (gameState.townEventLog) {
+        for (const evt of gameState.townEventLog) {
+            if (evt.owner === 0) {
+                const toastType = evt.polarity === 'positive' ? 'town-event-positive' : 'town-event-negative';
+                showNotification(evt.eventName, evt.message, toastType, 5000);
+            }
+        }
+    }
+
+    // Update Fog of War visibility after AI movement
+    gameState.fogOfWar.updateVisibility(gameState);
+
     _lastInfoKey = null;
+
+    // Show strategy hint every 3 turns
+    if (gameState.turn % 3 === 0 && gameState.phase === 'playing') {
+        const hint = getHint(gameState);
+        if (hint) {
+            const hintBar = document.getElementById('hintBar');
+            const hintText = document.getElementById('hintText');
+            if (hintBar && hintText) {
+                hintText.innerHTML = `<strong>${hint.title}</strong> — ${hint.text}`;
+                hintBar.style.display = 'block';
+            }
+        }
+    }
 
     if (gameState.phase === 'gameover') {
         showGameOverDialog(gameState.winner && gameState.winner.id === 0);
@@ -942,7 +1106,7 @@ function showOrdersPanel() {
 
     overlay.innerHTML = `
         <div class="orders-dialog">
-            <h3>Orders — ${stats.name} (${unit.troops} troops)</h3>
+            <h3>Orders — ${getUnitDisplayName(unit)} (${unit.troops} troops)</h3>
             <p>Current order: <strong>${unit.orders}</strong></p>
             <div class="order-buttons">
                 ${orders.map(o => `<button class="order-btn ${unit.orders === o ? 'active' : ''}" data-order="${o}">${o.replace('_', ' ').toUpperCase()}</button>`).join('')}
@@ -1082,7 +1246,7 @@ function updateInfoPanel() {
     const unitsHere = gameState.units.filter(u => u.q === hex.q && u.r === hex.r);
 
     // Build a fingerprint to avoid rebuilding every frame
-    const unitFingerprint = unitsHere.map(u => `${u.id}:${u.troops}:${u.orders}:${u.movesRemaining}`).join('|');
+    const unitFingerprint = unitsHere.map(u => `${u.id}:${u.troops}:${u.orders}:${u.movesRemaining}:${u.customName || ''}`).join('|');
     const infoKey = `${key}:${city ? city.owner + ':' + city.population + ':' + city.garrison : 'none'}:${unitFingerprint}:${gameState.selectedUnit ? gameState.selectedUnit.id : 'x'}`;
     if (infoKey === _lastInfoKey) return;
     _lastInfoKey = infoKey;
@@ -1149,7 +1313,9 @@ function updateInfoPanel() {
             html += `<div class="unit-card ${isSelected ? 'selected' : ''}" data-unit-id="${unit.id}">
                 <div class="unit-card-header">
                     <span class="unit-card-symbol" style="color:${ownerColor}">${stats.symbol}</span>
-                    <span class="unit-card-name">${stats.name}</span>
+                    <span class="unit-card-name">${getUnitDisplayName(unit)}</span>
+                    <span style="font-size:10px;color:#888;margin-left:4px;">${stats.name}</span>
+                    ${isMine ? `<button class="unit-rename-btn" data-unit-id="${unit.id}" style="font-size:10px;padding:1px 4px;background:#333;border:1px solid #555;border-radius:2px;color:#8cf;cursor:pointer;margin-left:auto;">✎</button>` : ''}
                     <span class="unit-card-toggle">[+]</span>
                 </div>
                 <div class="unit-card-details">
@@ -1175,6 +1341,9 @@ function updateInfoPanel() {
                         ${orders.filter(o => o !== 'move_to').map(o => `<button class="unit-order-btn ${unit.orders === o ? 'active' : ''}" data-unit-id="${unit.id}" data-order="${o}">${o.replace('_', ' ')}</button>`).join('')}
                         <button class="unit-order-btn unit-moveto-btn ${unit.orders === 'move_to' ? 'active' : ''}" data-unit-id="${unit.id}">move to...</button>
                     </div>` : ''}
+                    ${isMine && unit.troops > 1 && unit.type !== UNIT_TYPE.COMMANDER ? `
+                    <button class="unit-split-btn" data-unit-id="${unit.id}" style="margin:4px 0 0 0;padding:3px 8px;background:#2a4a6a;color:#8cf;border:1px solid #4a4a4a;border-radius:3px;cursor:pointer;font-size:11px;width:100%;">Split Unit (${Math.floor(unit.troops / 2)} + ${unit.troops - Math.floor(unit.troops / 2)} troops)</button>
+                    ` : ''}
                 </div>
             </div>`;
         }
@@ -1273,6 +1442,51 @@ function updateInfoPanel() {
             });
         });
 
+        // Bind split buttons (unit cards)
+        unitsList.querySelectorAll('.unit-split-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const unitId = parseInt(btn.dataset.unitId);
+                const unit = gameState.units.find(u => u.id === unitId);
+                if (!unit || unit.troops < 2) {
+                    updateStatusBar('Cannot split a unit with fewer than 2 troops.');
+                    return;
+                }
+
+                const newUnit = splitUnit(unit, gameState.units);
+                if (newUnit) {
+                    const stats = UNIT_STATS[unit.type];
+                    updateStatusBar(`Split ${getUnitDisplayName(unit)}: original retains ${unit.troops} troops, new unit has ${newUnit.troops} troops (leadership 0).`);
+                    _lastInfoKey = null; // force panel refresh
+                } else {
+                    updateStatusBar('Split failed.');
+                }
+            });
+        });
+
+        // Bind rename buttons (unit cards)
+        unitsList.querySelectorAll('.unit-rename-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const unitId = parseInt(btn.dataset.unitId);
+                const unit = gameState.units.find(u => u.id === unitId);
+                if (!unit) return;
+                const current = getUnitDisplayName(unit);
+                const newName = prompt('Enter a new name for this unit:', current);
+                if (newName !== null && newName.trim().length > 0) {
+                    // Check uniqueness — no two units can have the same name
+                    const duplicate = gameState.units.find(u => u.customName === newName.trim() && u.id !== unit.id);
+                    if (duplicate) {
+                        updateStatusBar('A unit with that name already exists. Choose a unique name.');
+                        return;
+                    }
+                    unit.customName = newName.trim().slice(0, 30);
+                    updateStatusBar(`Unit renamed to "${unit.customName}".`);
+                    _lastInfoKey = null; // force panel refresh
+                }
+            });
+        });
+
         // Show "Manage Troops" button when 2+ of our units share this hex
         const myUnitsHere = unitsHere.filter(u => u.owner === 0);
         if (myUnitsHere.length >= 2) {
@@ -1284,6 +1498,81 @@ function updateInfoPanel() {
         }
     } else {
         unitsSection.style.display = 'none';
+    }
+
+    // ── Sector section ──
+    const sectorSection = document.getElementById('sectorSection');
+    if (tile && tile.sectorId !== undefined && gameState.map.sectors) {
+        const sector = gameState.map.sectors.find(s => s.id === tile.sectorId);
+        if (sector) {
+            sectorSection.style.display = 'block';
+            document.getElementById('sectorNumber').textContent = `S${sector.id}`;
+            document.getElementById('sectorOwner').textContent = sector.owner === null ? 'Contested' :
+                sector.owner === 0 ? 'You' : gameState.players[sector.owner]?.name || 'Unknown';
+            document.getElementById('sectorCityCount').textContent = sector.cityIds.length;
+            let taxBonus = 0;
+            if (sector.owner !== null) {
+                taxBonus += SECTOR_OWN_BONUS * 100;
+                const adjControlled = (sector.adjacentIds || []).filter(id => {
+                    const adj = gameState.map.sectors.find(s => s.id === id);
+                    return adj && adj.owner === sector.owner;
+                }).length;
+                taxBonus += SECTOR_TAX_BONUS * adjControlled * 100;
+            }
+            document.getElementById('sectorTaxBonus').textContent = `+${Math.round(taxBonus)}%`;
+
+            // List all cities in this sector — clickable to jump to them
+            const sectorCitiesDiv = document.getElementById('sectorCities');
+            if (sectorCitiesDiv) {
+                const citiesInSector = sector.cityIds.map(cid =>
+                    gameState.map.cities.find(c => c.id === cid)
+                ).filter(c => c);
+
+                if (citiesInSector.length > 0) {
+                    sectorCitiesDiv.innerHTML =
+                        '<div style="font-size:13px;color:#888;margin-bottom:4px;">Cities in this sector (click to view):</div>' +
+                        citiesInSector.map(city => {
+                            const ownerLabel = city.owner === null ? 'Neutral' :
+                                city.owner === 0 ? 'You' :
+                                (gameState.players[city.owner]?.name || '?');
+                            const ownerColor = city.owner === null ? '#999' : PLAYER_COLORS[city.owner] || '#999';
+                            return `<div class="sector-city-link" data-city-id="${city.id}" style="display:flex;align-items:center;gap:6px;padding:4px 6px;margin:2px 0;background:#2a2a2a;border:1px solid #3a3a3a;border-radius:3px;cursor:pointer;font-size:14px;">
+                                <span style="width:8px;height:8px;border-radius:2px;background:${ownerColor};display:inline-block;"></span>
+                                <span style="flex:1;">${city.name}</span>
+                                <span style="color:#888;font-size:12px;">Pop ${city.population.toLocaleString()}</span>
+                            </div>`;
+                        }).join('');
+
+                    // Wire clicks to jump to city
+                    sectorCitiesDiv.querySelectorAll('.sector-city-link').forEach(link => {
+                        link.addEventListener('click', () => {
+                            const cityId = parseInt(link.dataset.cityId);
+                            const city = gameState.map.cities.find(c => c.id === cityId);
+                            if (!city) return;
+                            // Center camera on the city
+                            const { x, y } = axialToPixel(city.q, city.r);
+                            camera.centerOn(x, y);
+                            // Select the hex to show city info panel
+                            gameState.selectedHex = { q: city.q, r: city.r };
+                            gameState.selectedCity = city;
+                            _lastInfoKey = null; // force info panel refresh
+                        });
+                        link.addEventListener('mouseenter', () => {
+                            link.style.background = '#3a3a4a';
+                        });
+                        link.addEventListener('mouseleave', () => {
+                            link.style.background = '#2a2a2a';
+                        });
+                    });
+                } else {
+                    sectorCitiesDiv.innerHTML = '';
+                }
+            }
+        } else {
+            sectorSection.style.display = 'none';
+        }
+    } else {
+        sectorSection.style.display = 'none';
     }
 }
 
@@ -1624,16 +1913,19 @@ function showRecruitDialog(city) {
                 return;
             }
 
-            // Create new unit of same type with split troops
-            const newUnit = createUnit(unit.type, 0, city);
-            newUnit.troops = splitCount;
-            newUnit.maxTroops = splitCount;
-            unit.troops -= splitCount;
-            unit.maxTroops = unit.troops;
-            gameState.units.push(newUnit);
+            // Use splitUnit for consistent behavior, then adjust for custom amounts
+            const newUnit = splitUnit(unit, gameState.units);
+            if (newUnit) {
+                // splitUnit divides evenly; override with the player's custom amount
+                const diff = splitCount - newUnit.troops;
+                newUnit.troops = splitCount;
+                newUnit.maxTroops = splitCount;
+                unit.troops = unit.troops - diff;
+                unit.maxTroops = unit.troops;
+            }
 
             const stats = UNIT_STATS[unit.type];
-            updateStatusBar(`Split ${splitCount} troops from ${stats.name} into new unit.`);
+            updateStatusBar(`Split ${splitCount} troops from ${getUnitDisplayName(unit)} into new unit. New unit has leadership 0.`);
             _lastInfoKey = null; // force panel refresh
             overlay.style.display = 'none';
         });
@@ -1687,8 +1979,8 @@ function calculateCityRating(city) {
 }
 
 function handleCityCapture(unit, city, verb) {
-    const unitName = UNIT_STATS[unit.type].name;
-    showNotification(`${city.name} ${verb}!`, `Your ${unitName} has ${verb} ${city.name}.`, 'info');
+    const unitName = getUnitDisplayName(unit);
+    showNotification(`${city.name} ${verb}!`, `${unitName} has ${verb} ${city.name}.`, 'info');
     updateStatusBar(`${unitName} ${verb} ${city.name}!`);
     // Force info panel refresh
     _lastInfoKey = null;

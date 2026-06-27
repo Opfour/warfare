@@ -25,10 +25,14 @@ export function createUnit(type, owner, city) {
     const techAtkBonus = Math.round(stats.attack * tier.atkBonus * 10) / 10;
     const techDefBonus = Math.round(stats.defense * tier.defBonus * 10) / 10;
 
+    // Auto-generate a unique name based on unit type and an incrementing number
+    const _unitCounts = {};
+    
     return {
         id,
         type,
         owner,
+        customName: null, // player can rename; null = use default name
         q: city.q,
         r: city.r,
         troops,
@@ -99,6 +103,50 @@ export function recruitUnit(type, owner, city, playerObj) {
     return createUnit(type, owner, city);
 }
 
+// Split a unit into two: the original keeps leadership/experience, the new
+// unit gets leadership=0. Returns the new unit or null if the split is invalid.
+// Cannot split units with only 1 troop.
+export function splitUnit(unit, units) {
+    if (!unit || unit.troops < 2) return null;
+
+    // Even split — new unit takes half (floor), original keeps the rest
+    const half = Math.floor(unit.troops / 2);
+    if (half < 1) return null;
+
+    // Shrink the original
+    const originalTroops = unit.troops;
+    unit.troops = originalTroops - half;
+    unit.maxTroops = unit.troops;
+
+    // Create the new unit — inherits location and basic type info, but leadership=0
+    const newUnit = {
+        id: nextUnitId++,
+        type: unit.type,
+        owner: unit.owner,
+        customName: null,
+        q: unit.q,
+        r: unit.r,
+        troops: half,
+        maxTroops: half,
+        movesRemaining: 0, // new unit needs to wait until next turn
+        orders: 'hold',
+        originCityId: unit.originCityId,
+        // New unit gets no leadership / experience — fresh recruit
+        leadership: 0,
+        experience: 0,
+        equipBonusAtk: 0,
+        equipBonusDef: 0,
+        techTier: unit.techTier || 1,
+        techName: unit.techName || 'Primitive',
+    };
+
+    if (units) {
+        units.push(newUnit);
+    }
+
+    return newUnit;
+}
+
 // Remove a destroyed unit from the units array
 export function removeUnit(units, unitId) {
     const idx = units.findIndex(u => u.id === unitId);
@@ -115,6 +163,13 @@ export function unitsAtHex(units, q, r) {
 // Find units at hex for a specific owner
 export function playerUnitsAtHex(units, q, r, owner) {
     return units.filter(u => u.q === q && u.r === r && u.owner === owner);
+}
+
+// Get a unit's display name: custom name if set, otherwise type name with ID
+export function getUnitDisplayName(unit) {
+    if (unit.customName) return unit.customName;
+    const stats = UNIT_STATS[unit.type];
+    return `${stats.name} #${unit.id}`;
 }
 
 // Find enemy units at a hex

@@ -1,11 +1,12 @@
-// Turn manager: phase sequencing, turn transitions
 
 import { UNIT_STATS, TERRAIN_MOVE_COST } from './config.js';
 import { getMoveCost } from './config.js';
-import { hexKey, hexNeighbors } from './hex.js';
+import { hexKey, hexNeighbors, hexDistance } from './hex.js';
 import { collectTaxes, applyCityGrowth, checkRevolts } from './investment.js';
 import { checkCommanderDeath, tryCaptureCity } from './combat.js';
 import { ORDER } from './orders.js';
+import { processTownEvents } from './events.js';
+import { recalculateSectorOwnership } from './sectors.js';
 
 export class TurnManager {
     constructor(gameState, aiPlayers) {
@@ -25,10 +26,23 @@ export class TurnManager {
             ai.executeTurn(gs);
         }
 
+        // 1b. Process town events (after AI movement, before tax collection)
+        const townEvents = processTownEvents(gs);
+        for (const evt of townEvents) {
+            this.turnLog.push(evt.message);
+        }
+        // Store for toast notification system
+        gs.townEventLog = townEvents;
+
+        // 1c. Recalculate sector ownership (after city ownership changes)
+        if (gs.map.sectors) {
+            recalculateSectorOwnership(gs.map.sectors, gs.map.cities);
+        }
+
         // 2. Collect taxes for all players
         for (const player of gs.players) {
             if (!player.alive) continue;
-            const income = collectTaxes(player, gs.map.cities);
+            const income = collectTaxes(player, gs.map.cities, gs.map.sectors);
             this.turnLog.push(`${player.name} collected ${income} gold in taxes.`);
         }
 
@@ -206,3 +220,6 @@ export class TurnManager {
         return path;
     }
 }
+
+// Re-export for use in other modules (e.g. after city captures)
+export { recalculateSectorOwnership };

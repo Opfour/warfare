@@ -8,7 +8,7 @@
 // 5. Assign terrain within regions with biome variation
 // 6. Place cities clustered within regions
 
-import { TERRAIN, DEFAULT_LAND_RATIO, getMapScale } from './config.js';
+import { TERRAIN, DEFAULT_LAND_RATIO, getMapScale, getSectorGridSize, SECTOR_GRID_BY_MAP_WIDTH } from './config.js';
 import { hexNeighbors, hexKey, hexDistance } from './hex.js';
 import { generateCityNames } from './utils.js';
 
@@ -61,7 +61,12 @@ export function generateMap(rng, options = {}) {
     // Phase 8: Place cities clustered within regions
     const cities = placeCities(rng, tiles, landTiles, regions, cityCount, width, height);
 
-    return { tiles, cities, regions, width: totalWidth, height: totalHeight };
+    // Phase 9: Build sector grid
+    // Use wider sector grid for larger maps
+    let sectorGridSize = SECTOR_GRID_BY_MAP_WIDTH[width] || getSectorGridSize(opponents);
+    const sectors = buildSectorGrid(tiles, cities, width, height, sectorGridSize, padding);
+
+    return { tiles, cities, regions, sectors, width: totalWidth, height: totalHeight };
 }
 
 // ─── Phase 1: Continent Shape ────────────────────────────────────
@@ -591,3 +596,75 @@ function placeCities(rng, tiles, landTiles, regions, cityCount, width, height) {
 
     return cities;
 }
+ 
+ // ─── Phase 9: Sector Grid ───────────────────────────────────────
+ 
+ // Divide the map into a grid of NxN sectors. Each hex is assigned to
+ // a sector based on its (q, r) coordinates. Cities inherit the sector
+ // of their hex. Sector adjacency is computed for tax-bonus lookups.
+ function buildSectorGrid(tiles, cities, mapWidth, mapHeight, gridSize, padding) {
+     const totalWidth = mapWidth + padding * 2;
+     const totalHeight = mapHeight + padding * 2;
+ 
+     // Sector dimensions in hex units
+     const sectorW = totalWidth / gridSize;
+     const sectorH = totalHeight / gridSize;
+ 
+     const sectors = [];
+ 
+     // Create sector objects in a 2D grid, indexed [row][col]
+     for (let row = 0; row < gridSize; row++) {
+         for (let col = 0; col < gridSize; col++) {
+             sectors.push({
+                 id: row * gridSize + col,
+                 col,
+                 row,
+                 owner: null,      // leader ID or null if contested/empty
+                 cityIds: [],       // IDs of cities within this sector
+                 tiles: new Set(),  // hex keys within this sector
+             });
+         }
+     }
+ 
+     // Helper: map (q, r) to sector index
+     function getSectorIndex(q, r) {
+         // q and r range from -padding to width+padding-1
+         const clampedQ = Math.max(0, Math.min(totalWidth - 1, q + padding));
+         const clampedR = Math.max(0, Math.min(totalHeight - 1, r + padding));
+         const col = Math.min(gridSize - 1, Math.floor(clampedQ / sectorW));
+         const row = Math.min(gridSize - 1, Math.floor(clampedR / sectorH));
+         return row * gridSize + col;
+     }
+ 
+     // Assign each tile to a sector
+     for (const [key, tile] of tiles) {
+         const idx = getSectorIndex(tile.q, tile.r);
+         sectors[idx].tiles.add(key);
+         tile.sectorId = sectors[idx].id;
+     }
+ 
+     // Assign cities to sectors
+     for (const city of cities) {
+         const idx = getSectorIndex(city.q, city.r);
+         city.sectorId = sectors[idx].id;
+         sectors[idx].cityIds.push(city.id);
+     }
+ 
+     // Compute adjacency — sectors are adjacent if they share a border
+     // in the grid (including diagonals for broader bonus coverage)
+     for (const sector of sectors) {
+         sector.adjacentIds = [];
+         for (let dr = -1; dr <= 1; dr++) {
+             for (let dc = -1; dc <= 1; dc++) {
+                 if (dr === 0 && dc === 0) continue;
+                 const nc = sector.col + dc;
+                 const nr = sector.row + dr;
+                 if (nc >= 0 && nc < gridSize && nr >= 0 && nr < gridSize) {
+                     sector.adjacentIds.push(nr * gridSize + nc);
+                 }
+             }
+         }
+     }
+ 
+     return sectors;
+ }

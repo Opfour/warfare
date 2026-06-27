@@ -19,10 +19,28 @@ export class Camera {
 
         // Drag state
         this.dragging = false;
+
+        // Zoom state
+        this.zoom = 0.7;
+        this.minZoom = 0.4;
+        this.maxZoom = 2.5;
         this.dragStartX = 0;
         this.dragStartY = 0;
         this.dragCamStartX = 0;
         this.dragCamStartY = 0;
+    }
+
+    // Zoom in or out, keeping the focal point centered on the mouse position
+    zoomAt(screenX, screenY, delta) {
+        const oldZoom = this.zoom;
+        this.zoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.zoom + delta));
+        if (this.zoom === oldZoom) return;
+        // Adjust camera position so the world point under the cursor stays fixed
+        const worldX = this.x + screenX / oldZoom;
+        const worldY = this.y + screenY / oldZoom;
+        this.x = worldX - screenX / this.zoom;
+        this.y = worldY - screenY / this.zoom;
+        this.clamp();
     }
 
     // Set the world bounds based on map dimensions
@@ -53,11 +71,11 @@ export class Camera {
         };
     }
 
-    // Convert screen coordinates to world coordinates
+    // Convert screen coordinates to world coordinates (accounting for zoom)
     screenToWorld(sx, sy) {
         return {
-            x: sx + this.x,
-            y: sy + this.y,
+            x: (sx / this.zoom) + this.x,
+            y: (sy / this.zoom) + this.y,
         };
     }
 
@@ -112,7 +130,7 @@ export class Camera {
 
     // Clamp camera to map bounds
     clamp() {
-        const margin = HEX_SIZE * 2;
+        const margin = HEX_SIZE * 2 * this.zoom;
         const minX = -margin;
         const minY = -margin;
         const maxX = Math.max(this.mapPixelWidth - this.canvasWidth + margin, minX);
@@ -123,11 +141,10 @@ export class Camera {
 
     // Check if a world-space rectangle is visible on screen
     isVisible(wx, wy, width, height) {
-        return (
-            wx + width > this.x &&
-            wx < this.x + this.canvasWidth &&
-            wy + height > this.y &&
-            wy < this.y + this.canvasHeight
-        );
+        const sx = (wx - this.x) * this.zoom;
+        const sy = (wy - this.y) * this.zoom;
+        const sw = width * this.zoom;
+        const sh = height * this.zoom;
+        return sx + sw > 0 && sx < this.canvasWidth && sy + sh > 0 && sy < this.canvasHeight;
     }
 }

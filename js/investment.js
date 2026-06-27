@@ -1,15 +1,33 @@
 // Tax collection, investment allocation, city growth, revolt logic
 
-import { REVOLT_THRESHOLD, getTechTier } from './config.js';
+import { REVOLT_THRESHOLD, getTechTier, getDifficulty } from './config.js';
+import { getSectorTaxMultiplier } from './sectors.js';
 
-// Collect taxes from all cities owned by a player
-export function collectTaxes(player, cities) {
+// Collect taxes from all cities owned by a player.
+// For AI players, apply difficulty-based tax multiplier.
+export function collectTaxes(player, cities, sectors) {
+    const gs = player._gameState;
     let totalIncome = 0;
+    let taxMult = 1.0;
+
+    // Determine difficulty multiplier for AI players
+    if (!player.isHuman && gs && gs.difficulty) {
+        taxMult = getDifficulty(gs.difficulty).taxMult;
+    }
 
     for (const city of cities) {
         if (city.owner !== player.id) continue;
 
-        const income = calculateCityTaxIncome(city);
+        let income = calculateCityTaxIncome(city);
+
+        // Apply sector tax bonuses
+        if (sectors) {
+            const sectorMult = getSectorTaxMultiplier(city, sectors, player);
+            income *= sectorMult;
+        }
+
+        income *= taxMult;
+
         totalIncome += income;
 
         // Tax impact on satisfaction
@@ -31,11 +49,26 @@ export function calculateCityTaxIncome(city) {
 
 // Apply investment effects and grow cities at end of turn
 // Returns array of notification events (tech upgrades, milestones)
-export function applyCityGrowth(cities) {
+// For AI-owned cities, difficulty growth/tech multipliers are applied.
+export function applyCityGrowth(cities, gameState) {
     const events = [];
+
+    // Determine difficulty multipliers
+    let growthMult = 1.0, techMult = 1.0;
+    if (gameState && gameState.difficulty) {
+        const diff = getDifficulty(gameState.difficulty);
+        growthMult = diff.growthMult;
+        techMult = diff.techMult;
+    }
 
     for (const city of cities) {
         if (city.owner === null) continue; // neutral cities don't grow
+
+        // Per-city multipliers: AI cities get difficulty bonus, human cities get 1.0
+        const owner = gameState && gameState.players ? gameState.players[city.owner] : null;
+        const isAI = owner && !owner.isHuman;
+        const cityGrowthMult = isAI ? growthMult : 1.0;
+        const cityTechMult = isAI ? techMult : 1.0;
 
         const inv = city.investment;
         const oldTier = getTechTier(city.knowledge);
@@ -44,11 +77,11 @@ export function applyCityGrowth(cities) {
         const growthRate = 0.02;
         // Knowledge grows without cap; higher knowledge = slightly faster research (compounding)
         const knowledgeAccel = 1 + city.knowledge * 0.001; // +0.1% per knowledge point
-        city.knowledge += inv.knowledge * growthRate * 0.5 * knowledgeAccel;
+        city.knowledge += inv.knowledge * growthRate * 0.5 * knowledgeAccel * cityTechMult;
 
         // Defense and economics uncapped (but slower growth at high values)
-        city.defense += inv.defense * growthRate * 0.5;
-        city.economics += inv.economics * growthRate * 0.5;
+        city.defense += inv.defense * growthRate * 0.5 * cityGrowthMult;
+        city.economics += inv.economics * growthRate * 0.5 * cityGrowthMult;
 
         // Public benefit increases satisfaction (still capped at 100)
         city.satisfaction = Math.min(100, city.satisfaction + inv.public * growthRate * 0.3);
@@ -61,11 +94,11 @@ export function applyCityGrowth(cities) {
         // Population growth — tech level accelerates growth
         const techPopBonus = 1 + tier.econBonus * 0.5;
         const growthFactor = (Math.min(city.economics, 200) * city.satisfaction) / 10000;
-        const popGrowth = city.population * growthRate * growthFactor * techPopBonus;
+        const popGrowth = city.population * growthRate * growthFactor * techPopBonus * cityGrowthMult;
         city.population = Math.floor(city.population + popGrowth);
 
         // Garrison replenishes — scales with defense and tech
-        const garrisonGrowth = (city.population * 0.002) * (Math.min(city.defense, 200) / 100) * (1 + tier.defBonus * 0.3);
+        const garrisonGrowth = (city.population * 0.002) * (Math.min(city.defense, 200) / 100) * (1 + tier.defBonus * 0.3) * cityGrowthMult;
         city.garrison = Math.floor(Math.min(city.population * 0.3, city.garrison + garrisonGrowth));
 
         // Check for tech tier upgrade

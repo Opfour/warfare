@@ -1,0 +1,87 @@
+      1-803-699-5465 (Available 24 Hours. International orders encouraged.)
+Accident slays most life in surrounding area.
+Additional Town Investment
+Aggressive
+Annoyed
+Are you sure you want to disband this unit?
+Are You Sure You Want To Merge Units
+ArrogantMessages
+ARSON - Fires Burn
+Bacteriological Accident
+Bombings destroy labs and cripple defense.
+Casualties result in minor uprising.
+Civil Funding:
+CSplitterWnd
+Defense is effected by minor act of sabotage.
+Difficulty: KILL THE HUMAN
+Difficulty: %s
+Difficulty Setting:
+&Disband
+Disband Unit
+Display ownership of sectors.
+Do You Want To Merge Units At This Location?
+Draw Sector Borders
+DrawSectors
+Enemy Technology Stolen
+Espionage use to build defense against enemy tactics.
+Event Effect
+Event Town
+Event Type
+Expansion of business causes major town growth.
+Final Score: %ld
+Fires spread destroying large portions of the town.
+Flu effects small fraction of population.
+Flu Season
+Funding Type:
+Government investments in local business pay big.
+Great Kills
+Highly advanced detection and targeting systems developed.
+INSANE
+into this mindless killing stuff.
+Investments Pay Off
+ Killed 
+KILL THE HUMAN
+Labs and defense systems are severely damaged by fires.
+Leader's Available Money
+Leader Surrenders
+Loc: %d,%d  Sector: %d,%d
+Maybe you should go down a difficulty setting.
+&Merge
+Merge Request
+Minor advance in military labs.
+Minor Sabotage
+Minor Technical Advance
+Move Leader, Then DisbandThis Unit.
+MUST KILL
+New shield dome created to cover entire town area.
+Plague
+Plague kills large numbers of all people in town.
+Recruits Available: %u
+Recruits Available: XXXXXXXX
+Scores are attracted to town by opportunity.
+Sector Grid
+Sector Layout: %s
+Sector Layout: xxXyy
+Sector Ownership
+Sectors
+, Sectors are 
+Sectors: %d
+Sectors: XXX
+&Split
+%s's army has surrendered to %s.
+Surrender Response
+Surrender??? What's that???
+Technology Funding:
+Terrorist Bombings
+- The 'KILL THE HUMAN' difficulty setting
+There are two addresses available to answer questions, make suggestions, and get assistance with troubles directly related to this product.
+Those were soldiers of yours we captured.
+Timer Resource not available!
+Town Defense Funding:
+Town Event
+TownEvents
+Town Funding
+Town Investment
+Town Maintenance is %ld.
+Town Maintenance is %ld (No funds for %d).
+ Unit Defense Funding:

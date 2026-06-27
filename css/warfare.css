@@ -33,7 +33,7 @@ body {
     color: #ccc;
     padding: 0 14px;
     height: 100%;
-    font-size: 13px;
+    font-size: 17px;
     cursor: pointer;
     transition: background 0.15s;
 }
@@ -63,7 +63,7 @@ body {
 
 #menuBar .turn-info {
     padding: 0 14px;
-    font-size: 12px;
+    font-size: 16px;
     color: #aaa;
 }
 
@@ -100,7 +100,7 @@ body {
     border-radius: 6px;
     padding: 10px 20px;
     color: #ddd;
-    font-size: 13px;
+    font-size: 17px;
     max-width: 500px;
     text-align: center;
     pointer-events: auto;
@@ -117,7 +117,7 @@ body {
 .notification-toast.tech-upgrade .toast-title {
     color: #8f8;
     font-weight: bold;
-    font-size: 14px;
+    font-size: 18px;
 }
 
 .notification-toast.revolt {
@@ -136,7 +136,7 @@ body {
 }
 
 .notification-toast .toast-desc {
-    font-size: 11px;
+    font-size: 15px;
     color: #999;
 }
 
@@ -159,7 +159,7 @@ body {
     background: #222;
     border-top: 1px solid #444;
     padding: 3px 10px;
-    font-size: 12px;
+    font-size: 16px;
     color: #aaa;
     flex-shrink: 0;
 }
@@ -178,7 +178,7 @@ body {
     border-radius: 4px;
     padding: 12px;
     z-index: 20;
-    font-size: 12px;
+    font-size: 16px;
 }
 
 #infoPanel.visible {
@@ -187,7 +187,7 @@ body {
 
 #infoPanel h3 {
     margin: 0 0 8px 0;
-    font-size: 14px;
+    font-size: 18px;
     color: #fff;
     border-bottom: 1px solid #444;
     padding-bottom: 4px;
@@ -195,7 +195,7 @@ body {
 
 #infoPanel h4 {
     margin: 8px 0 4px 0;
-    font-size: 11px;
+    font-size: 15px;
     color: #aaa;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -223,7 +223,7 @@ body {
     background: none;
     border: none;
     color: #888;
-    font-size: 16px;
+    font-size: 20px;
     cursor: pointer;
 }
 
@@ -258,7 +258,7 @@ body {
 }
 
 .unit-card-symbol {
-    font-size: 16px;
+    font-size: 20px;
     width: 22px;
     text-align: center;
 }
@@ -267,11 +267,11 @@ body {
     flex: 1;
     font-weight: bold;
     color: #ddd;
-    font-size: 12px;
+    font-size: 16px;
 }
 
 .unit-card-toggle {
-    font-size: 10px;
+    font-size: 15px;
     color: #888;
     cursor: pointer;
 }
@@ -281,7 +281,7 @@ body {
     margin-top: 6px;
     padding-top: 4px;
     border-top: 1px solid #333;
-    font-size: 11px;
+    font-size: 15px;
 }
 
 .unit-card-details.open {
@@ -308,7 +308,7 @@ body {
 
 .unit-card-orders button {
     padding: 2px 6px;
-    font-size: 10px;
+    font-size: 15px;
     background: #333;
     color: #bbb;
     border: 1px solid #444;
@@ -336,7 +336,7 @@ body {
 
 .city-overview h4 {
     margin: 0 0 6px 0;
-    font-size: 11px;
+    font-size: 15px;
     color: #888;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -356,7 +356,7 @@ body {
     width: 28px;
     height: 28px;
     border-radius: 4px;
-    font-size: 16px;
+    font-size: 20px;
     font-weight: bold;
     color: #fff;
     background: #555;
@@ -370,7 +370,7 @@ body {
 .rating-grade.grade-f { background: #8a2a2a; }
 
 .rating-score {
-    font-size: 13px;
+    font-size: 17px;
     color: #bbb;
 }
 
@@ -390,7 +390,7 @@ body {
 
 .bar-label {
     width: 28px;
-    font-size: 9px;
+    font-size: 13px;
     color: #777;
     text-align: right;
     font-weight: bold;
@@ -419,7 +419,7 @@ body {
 .bar-satisfaction { background: #d84a4a; }
 
 .overview-summary {
-    font-size: 10px;
+    font-size: 15px;
     color: #888;
     font-style: italic;
     text-align: center;
@@ -460,7 +460,7 @@ body {
 
 .modal-overlay h3 {
     margin: 0 0 12px 0;
-    font-size: 15px;
+    font-size: 20px;
     color: #fff;
     border-bottom: 1px solid #444;
     padding-bottom: 6px;
@@ -468,7 +468,7 @@ body {
 
 .modal-overlay h4 {
     margin: 12px 0 6px 0;
-    font-size: 12px;
+    font-size: 16px;
     color: #aaa;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -476,7 +476,7 @@ body {
 
 .modal-overlay p {
     margin: 6px 0;
-    font-size: 13px;
+    font-size: 17px;
     color: #bbb;
 }
 
@@ -487,7 +487,7 @@ body {
     padding: 6px 16px;
     border-radius: 3px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 17px;
     transition: background 0.15s;
 }
 
@@ -515,7 +515,7 @@ body {
     padding: 10px;
     background: #252525;
     border-radius: 4px;
-    font-size: 12px;
+    font-size: 16px;
     line-height: 1.6;
 }
 
@@ -526,19 +526,19 @@ body {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    font-size: 18px;
+    font-size: 22px;
     color: #fff;
     margin-bottom: 4px;
 }
 
 .combat-vs {
-    font-size: 18px;
+    font-size: 22px;
     font-weight: bold;
     color: #888;
 }
 
 .combat-odds {
-    font-size: 20px;
+    font-size: 24px;
     font-weight: bold;
     color: #fff;
     margin-top: 4px;
@@ -546,7 +546,7 @@ body {
 
 .combat-outlook {
     text-align: center;
-    font-size: 13px;
+    font-size: 17px;
     color: #cca;
     font-style: italic;
     margin: 6px 0 4px 0;
@@ -554,7 +554,7 @@ body {
 
 .combat-matchup {
     text-align: center;
-    font-size: 11px;
+    font-size: 15px;
     color: #8ac;
     margin: 0 0 12px 0;
 }
@@ -577,7 +577,7 @@ body {
 .combat-log {
     max-height: 120px;
     overflow-y: auto;
-    font-size: 11px;
+    font-size: 15px;
     color: #aaa;
     background: #111;
     border-radius: 3px;
@@ -601,7 +601,7 @@ body {
 
 .invest-row {
     margin: 8px 0;
-    font-size: 13px;
+    font-size: 17px;
 }
 
 .invest-row label {
@@ -645,7 +645,7 @@ body {
 
 .order-btn {
     padding: 8px 14px !important;
-    font-size: 12px !important;
+    font-size: 16px !important;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -664,23 +664,23 @@ body {
 .list-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 12px;
+    font-size: 16px;
     margin: 6px 0;
 }
 
 .list-table th {
     text-align: left;
-    padding: 4px 8px;
+    padding: 8px 14px;
     background: #252525;
     color: #aaa;
-    font-size: 11px;
+    font-size: 15px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border-bottom: 1px solid #444;
 }
 
 .list-table td {
-    padding: 4px 8px;
+    padding: 8px 14px;
     border-bottom: 1px solid #2a2a2a;
     color: #ccc;
 }
@@ -705,7 +705,7 @@ body {
     display: flex;
     justify-content: space-between;
     padding: 3px 0;
-    font-size: 13px;
+    font-size: 17px;
 }
 
 .report-section .stat-row span:first-child {
@@ -741,7 +741,7 @@ body {
 }
 
 .recruit-symbol {
-    font-size: 20px;
+    font-size: 24px;
     width: 30px;
     text-align: center;
 }
@@ -753,7 +753,7 @@ body {
 }
 
 .recruit-stats {
-    font-size: 11px;
+    font-size: 15px;
     color: #888;
 }
 
@@ -782,13 +782,13 @@ body {
     background: #252530;
     border: 1px solid #3a3a4a;
     border-radius: 4px;
-    font-size: 12px;
+    font-size: 16px;
 }
 
 .manage-merge-row .merge-btn {
     margin: 2px 4px 2px 0;
     padding: 4px 10px;
-    font-size: 11px;
+    font-size: 15px;
     background: #2a4a2a;
     color: #8f8;
     border: 1px solid #4a4a4a;
@@ -810,7 +810,7 @@ body {
     background: #252530;
     border: 1px solid #3a3a4a;
     border-radius: 4px;
-    font-size: 12px;
+    font-size: 16px;
 }
 
 .manage-transfer-row select,
@@ -864,7 +864,7 @@ body {
     margin: 0 0 18px 0;
     color: #fff;
     text-align: center;
-    font-size: 22px;
+    font-size: 24px;
     letter-spacing: 1px;
 }
 
@@ -875,7 +875,7 @@ body {
 .dialog-field > label,
 .dialog-field > .field-label {
     display: block;
-    font-size: 13px;
+    font-size: 17px;
     color: #aaa;
     margin-bottom: 6px;
     font-weight: bold;
@@ -890,7 +890,7 @@ body {
     border: 1px solid #444;
     border-radius: 4px;
     padding: 8px 10px;
-    font-size: 13px;
+    font-size: 17px;
     cursor: pointer;
 }
 
@@ -899,7 +899,7 @@ body {
 }
 
 .dialog-field .note {
-    font-size: 12px;
+    font-size: 16px;
     color: #888;
     font-style: italic;
 }
@@ -918,7 +918,7 @@ body {
     border: 1px solid #444;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 18px;
     font-weight: bold;
     transition: background 0.15s, border-color 0.15s;
 }
@@ -955,7 +955,7 @@ body {
     padding: 8px 24px !important;
     border-radius: 4px !important;
     cursor: pointer;
-    font-size: 14px !important;
+    font-size: 18px !important;
     font-weight: bold;
     transition: background 0.15s;
 }
@@ -971,7 +971,7 @@ body {
     padding: 8px 24px !important;
     border-radius: 4px !important;
     cursor: pointer;
-    font-size: 14px !important;
+    font-size: 18px !important;
     transition: background 0.15s;
 }
 
@@ -987,7 +987,7 @@ body {
 }
 
 .gameover-dialog h2 {
-    font-size: 28px;
+    font-size: 30px;
     margin-bottom: 16px;
 }
 
@@ -998,7 +998,7 @@ body {
 .gameover-dialog button {
     margin-top: 16px;
     padding: 8px 32px;
-    font-size: 14px;
+    font-size: 18px;
 }
 
 /* Right-click Context Menu */
@@ -1013,7 +1013,7 @@ body {
     max-width: 260px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     padding: 4px 0;
-    font-size: 13px;
+    font-size: 17px;
 }
 
 .ctx-item {
@@ -1030,7 +1030,7 @@ body {
 
 .ctx-sub {
     padding-left: 28px;
-    font-size: 12px;
+    font-size: 16px;
     color: #bbb;
 }
 
@@ -1040,10 +1040,137 @@ body {
 
 .ctx-group-label {
     padding: 5px 14px 2px 14px;
-    font-size: 11px;
+    font-size: 15px;
     color: #888;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border-top: 1px solid #333;
     margin-top: 2px;
+}
+
+/* ─── Difficulty Selector ────────────────────────────────────── */
+.difficulty-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+}
+.difficulty-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: #2a2a2a;
+    border: 2px solid #444;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: border-color 0.2s, background 0.2s;
+}
+.difficulty-option:hover {
+    border-color: #66a;
+    background: #333;
+}
+.difficulty-option:has(input:checked) {
+    border-color: #4a8;
+    background: #2a3a2a;
+}
+.difficulty-option.difficulty-kill:has(input:checked) {
+    border-color: #a44;
+    background: #3a1a1a;
+}
+.difficulty-option .diff-name {
+    font-weight: bold;
+    font-size: 16px;
+}
+.difficulty-option .diff-desc {
+    font-size: 13px;
+    color: #aaa;
+}
+
+/* ─── Active Toggle Button ────────────────────────────────────── */
+.active-toggle {
+    background: #2a4a6a !important;
+    border-color: #6af !important;
+}
+
+/* ─── Town Event Toasts ──────────────────────────────────────── */
+.notification-toast.town-event-positive {
+    border-left: 4px solid #4f4;
+    background: linear-gradient(90deg, rgba(0,80,0,0.9), rgba(30,30,30,0.95));
+}
+.notification-toast.town-event-negative {
+    border-left: 4px solid #f44;
+    background: linear-gradient(90deg, rgba(80,0,0,0.9), rgba(30,30,30,0.95));
+}
+
+/* ─── Hint Bar ───────────────────────────────────────────────── */
+.hint-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 8px 16px;
+    background: rgba(20, 30, 50, 0.95);
+    border-top: 2px solid #4a6a8a;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 500;
+    font-size: 15px;
+    color: #cef;
+}
+.hint-bar .hint-text {
+    flex: 1;
+    text-align: center;
+}
+.hint-bar #hintDismiss {
+    background: #333;
+    border: 1px solid #555;
+    color: #f88;
+    font-size: 15px;
+    padding: 2px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: bold;
+}
+.hint-bar #hintDismiss:hover {
+    background: #4a2a2a;
+    border-color: #f88;
+}
+
+/* ─── Hall of Fame ────────────────────────────────────────────── */
+.hall-of-fame {
+    margin: 12px 0;
+    text-align: center;
+}
+.hall-of-fame h4 {
+    color: #ffd700;
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+.hof-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+}
+.hof-table th {
+    padding: 6px 12px;
+    background: #2a3a4a;
+    color: #8cf;
+    font-weight: bold;
+}
+.hof-table td {
+    padding: 6px 12px;
+    border-bottom: 1px solid #333;
+    text-align: center;
+}
+.hof-table tr:hover td {
+    background: #2a2a3a;
+}
+
+/* ─── Unit Rename Button ──────────────────────────────────────── */
+.unit-rename-btn:hover {
+    background: #4a4a6a !important;
+    border-color: #8cf !important;
 }

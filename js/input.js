@@ -62,6 +62,13 @@ export class InputHandler {
             }
         });
 
+        // Scroll wheel zoom
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.15 : 0.15;
+            this.camera.zoomAt(this.mouseX, this.mouseY, delta);
+        }, { passive: false });
+
         canvas.addEventListener('mouseleave', () => {
             this.mouseInCanvas = false;
             if (this.camera.dragging) {

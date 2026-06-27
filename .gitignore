@@ -18,3 +18,9 @@ token.pickle
 # OpenClaw credentials
 .openclaw/
 openclaw.json
+
+# Original game archives (reference material, not game code)
+warfare103/
+warfare107/
+dosbox_c/
+warfare_manual_v103.txt

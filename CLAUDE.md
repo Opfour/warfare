@@ -28,6 +28,11 @@ python3 -m http.server 8000
 - `js/unit.js` -- Unit creation, recruitment, management
 - `js/city.js` -- City model and attributes
 - `js/investment.js` -- Tax/investment, city growth, revolt logic
+- `js/orders.js` -- Unit orders system (attack, hold, dig-in, move-to, etc.)
+- `js/sectors.js` -- Sector grid ownership and tax bonus calculation
+- `js/events.js` -- Town events (plague, fires, tech advances, rubber-banding)
+- `js/fog.js` -- Fog of war (spotted vs detailed visibility, difficulty-based)
+- `js/hints.js` -- Strategy hints (context-aware tips for new players)
 - `js/orders.js` -- Unit orders system
 - `js/save.js` -- Save/load (planned)
 

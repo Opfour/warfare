@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Warfare</title>
+    <title>Warfare 2.0</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="css/warfare.css">
 </head>
@@ -20,6 +20,8 @@
         <button id="btnMap" disabled>Map</button>
         <button id="btnReports" disabled>Reports</button>
         <button id="btnSectors" disabled>Sectors</button>
+        <button id="btnEvents" disabled>Events: On</button>
+        <button id="btnFog" disabled>Fog: On</button>
         <div class="spacer"></div>
         <button id="btnEndTurn" class="primary">End Turn</button>
     </div>
@@ -72,12 +74,38 @@
                     <div class="overview-summary" id="citySummary">Balanced city</div>
                 </div>
                 <div id="recruitBtnWrap"></div>
+                <div id="eventHistorySection" style="display:none">
+                    <h4>Recent Events</h4>
+                    <div id="eventHistoryList"></div>
+                </div>
             </div>
 
             <!-- Units section (shown when units are at selected hex) -->
             <div id="unitsSection" style="display:none">
                 <h4>Units Here</h4>
                 <div id="unitsList"></div>
+            </div>
+
+            <!-- Sector info section (shown when a hex is selected) -->
+            <div id="sectorSection" style="display:none">
+                <h4>Sector Info</h4>
+                <div class="stat-row">
+                    <span class="stat-label">Sector:</span>
+                    <span class="stat-value" id="sectorNumber">—</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Owner:</span>
+                    <span class="stat-value" id="sectorOwner">Contested</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Cities:</span>
+                    <span class="stat-value" id="sectorCityCount">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Tax Bonus:</span>
+                    <span class="stat-value" id="sectorTaxBonus">+0%</span>
+                </div>
+                <div id="sectorCities" style="margin-top:6px;"></div>
             </div>
         </div>
     </div>
@@ -109,7 +137,37 @@
             </div>
             <div class="dialog-field">
                 <span class="field-label">Map Size:</span>
+                <select id="ngMapSizeSelect">
+                    <option value="0">Standard — 60 × 45, 50 cities</option>
+                    <option value="1">Large — 100 × 75, 100 cities</option>
+                    <option value="2">Huge — 120 × 90, 200 cities</option>
+                </select>
                 <span class="note" id="ngMapSize">60 × 45 — 50 cities, 5 regions</span>
+            </div>
+            <div class="dialog-field" id="ngDifficultyField">
+                <label for="ngDifficulty">Difficulty:</label>
+                <div class="difficulty-selector" id="ngDifficulty">
+                    <label class="difficulty-option" data-diff="EASY">
+                        <input type="radio" name="difficulty" value="EASY">
+                        <span class="diff-name">Easy</span>
+                        <span class="diff-desc">AI weakened, all units visible</span>
+                    </label>
+                    <label class="difficulty-option" data-diff="NORMAL">
+                        <input type="radio" name="difficulty" value="NORMAL" checked>
+                        <span class="diff-name">Normal</span>
+                        <span class="diff-desc">Standard AI, normal fog of war</span>
+                    </label>
+                    <label class="difficulty-option" data-diff="HARD">
+                        <input type="radio" name="difficulty" value="HARD">
+                        <span class="diff-name">Hard</span>
+                        <span class="diff-desc">AI boosted, reduced visibility</span>
+                    </label>
+                    <label class="difficulty-option difficulty-kill" data-diff="KILL_THE_HUMAN">
+                        <input type="radio" name="difficulty" value="KILL_THE_HUMAN">
+                        <span class="diff-name">KILL THE HUMAN</span>
+                        <span class="diff-desc">AI greatly boosted, minimal vision, all hostile</span>
+                    </label>
+                </div>
             </div>
             <div class="dialog-buttons">
                 <button id="ngCancel" class="btn-secondary">Cancel</button>
@@ -123,6 +181,12 @@
 
     <!-- Status Bar -->
     <div id="statusBar">Ready</div>
+
+    <!-- Hint Bar -->
+    <div id="hintBar" class="hint-bar" style="display:none">
+        <span id="hintText"></span>
+        <button id="hintDismiss">x</button>
+    </div>
 
     <script type="module" src="js/main.js"></script>
 </body>
