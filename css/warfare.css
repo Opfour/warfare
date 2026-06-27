@@ -1174,3 +1174,83 @@ body {
     background: #4a4a6a !important;
     border-color: #8cf !important;
 }
+
+/* ─── Options Dialog ───────────────────────────────────────────── */
+.options-dialog {
+    min-width: 360px;
+}
+
+.options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.option-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: #252525;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.option-toggle:hover {
+    background: #2a3a4a;
+    border-color: #4a6a8a;
+}
+
+.option-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #4a8abf;
+    cursor: pointer;
+}
+
+.option-label {
+    font-size: 17px;
+    font-weight: bold;
+    color: #ddd;
+    min-width: 130px;
+}
+
+.option-hint {
+    font-size: 14px;
+    color: #888;
+    margin-left: auto;
+}
+
+.options-sliders {
+    margin-top: 12px;
+}
+
+.option-slider-row {
+    margin: 10px 0;
+}
+
+.option-slider-row label {
+    display: block;
+    font-size: 16px;
+    color: #aaa;
+    margin-bottom: 6px;
+}
+
+.option-slider-row label span {
+    color: #8cf;
+    font-weight: bold;
+}
+
+.option-slider-row input[type="range"] {
+    width: 100%;
+    accent-color: #4a8abf;
+}
+
+/* ─── Map Overview button active state in menu bar ─────────────── */
+#menuBar button.active-toggle {
+    background: #2a5a8a;
+    color: #8cf;
+    font-weight: bold;
+}

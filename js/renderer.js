@@ -23,10 +23,182 @@ export class Renderer {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
+    // ─── Map Overview Mode ─────────────────────────────────────────
+    // Renders the entire map zoomed out: terrain, sector ownership colors,
+    // city dots with names, and a dim overlay. Click exits to main view.
+    drawOverview(gameState, camera) {
+        const ctx = this.ctx;
+
+        ctx.save();
+        ctx.scale(camera.zoom, camera.zoom);
+        ctx.translate(-camera.x, -camera.y);
+
+        // Draw all terrain tiles (no fog)
+        this.drawOverviewTiles(gameState, camera);
+
+        // Draw sector ownership fills
+        if (gameState.map.sectors) {
+            this.drawOverviewSectors(gameState, camera);
+        }
+
+        // Draw city dots with names
+        this.drawOverviewCities(gameState, camera);
+
+        ctx.restore();
+
+        // Dim overlay on top of everything
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Overview HUD text
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 22px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText('MAP OVERVIEW — Click to center map', this.canvas.width / 2, 10);
+
+        // Draw HUD info (turn, gold)
+        this.drawHUD(gameState);
+    }
+
+    drawOverviewTiles(gameState, camera) {
+        const ctx = this.ctx;
+        const { tiles } = gameState.map;
+
+        for (const [key, tile] of tiles) {
+            const { x, y } = axialToPixel(tile.q, tile.r);
+
+            if (!camera.isVisible(x - HEX_SIZE, y - HEX_SIZE, HEX_SIZE * 2, HEX_SIZE * 2)) continue;
+
+            const corners = hexCorners(x, y);
+
+            ctx.beginPath();
+            ctx.moveTo(corners[0].x, corners[0].y);
+            for (let i = 1; i < 6; i++) {
+                ctx.lineTo(corners[i].x, corners[i].y);
+            }
+            ctx.closePath();
+
+            ctx.fillStyle = TERRAIN_COLORS[tile.terrain] || '#333';
+            ctx.fill();
+
+            // Hex border — darker for distinction at overview zoom
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+        }
+    }
+
+    drawOverviewSectors(gameState, camera) {
+        const ctx = this.ctx;
+        const { tiles, sectors } = gameState.map;
+        if (!sectors) return;
+
+        for (const sector of sectors) {
+            if (sector.owner === null || sector.owner === undefined) continue;
+            if (sector.cityIds.length === 0) continue;
+
+            const color = PLAYER_COLORS[sector.owner];
+            if (!color) continue;
+
+            for (const key of sector.tiles) {
+                const tile = tiles.get(key);
+                if (!tile) continue;
+                const { x, y } = axialToPixel(tile.q, tile.r);
+                if (!camera.isVisible(x - HEX_SIZE, y - HEX_SIZE, HEX_SIZE * 2, HEX_SIZE * 2)) continue;
+
+                const corners = hexCorners(x, y);
+                ctx.beginPath();
+                ctx.moveTo(corners[0].x, corners[0].y);
+                for (let i = 1; i < 6; i++) {
+                    ctx.lineTo(corners[i].x, corners[i].y);
+                }
+                ctx.closePath();
+
+                ctx.fillStyle = this.hexToRgba(color, 0.30);
+                ctx.fill();
+            }
+        }
+
+        // Sector borders
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.lineWidth = 1.5;
+
+        for (const [key, tile] of tiles) {
+            const { x, y } = axialToPixel(tile.q, tile.r);
+            if (!camera.isVisible(x - HEX_SIZE, y - HEX_SIZE, HEX_SIZE * 2, HEX_SIZE * 2)) continue;
+            if (tile.sectorId === undefined) continue;
+
+            const neighbors = [
+                { q: tile.q + 1, r: tile.r },
+                { q: tile.q + 1, r: tile.r - 1 },
+                { q: tile.q, r: tile.r - 1 },
+            ];
+
+            for (const n of neighbors) {
+                const nKey = hexKey(n.q, n.r);
+                const nTile = tiles.get(nKey);
+                if (!nTile || nTile.sectorId === undefined) continue;
+                if (nTile.sectorId !== tile.sectorId) {
+                    this.drawHexEdge(x, y, tile.q, tile.r, n.q, n.r);
+                }
+            }
+        }
+    }
+
+    drawOverviewCities(gameState, camera) {
+        const ctx = this.ctx;
+        const { cities } = gameState.map;
+
+        for (const city of cities) {
+            const { x, y } = axialToPixel(city.q, city.r);
+            if (!camera.isVisible(x - HEX_SIZE, y - HEX_SIZE, HEX_SIZE * 2, HEX_SIZE * 2)) continue;
+
+            const color = city.owner !== null ? PLAYER_COLORS[city.owner] || NEUTRAL_COLOR : NEUTRAL_COLOR;
+            const size = 7;
+
+            // City dot (circle for overview)
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // White outer ring for player-owned cities
+            if (city.owner !== null) {
+                ctx.beginPath();
+                ctx.arc(x, y, size + 2, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // City name
+            const fontSize = 11;
+            ctx.fillStyle = '#fff';
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.font = `${fontSize}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.strokeText(city.name, x, y + size + 2);
+            ctx.fillText(city.name, x, y + size + 2);
+        }
+    }
+
     // Main draw call
     draw(gameState, camera) {
         this.clear();
         if (!gameState.map) return;
+
+        // Map overview mode: special full-map rendering
+        if (gameState.mapOverview) {
+            this.drawOverview(gameState, camera);
+            return;
+        }
+
         const ctx = this.ctx;
 
         ctx.save();

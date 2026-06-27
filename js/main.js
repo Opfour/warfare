@@ -16,6 +16,7 @@ import { ORDER, setOrder, setMoveTarget } from './orders.js';
 import { FogOfWar, FOG_DIFFICULTY } from './fog.js';
 import { getHint, resetHints } from './hints.js';
 import { recalculateSectorOwnership } from './sectors.js';
+import { saveGame, loadGame, listSavedGames, deleteSavedGame } from './save.js';
 
 // Game state — single source of truth
 const gameState = {
@@ -35,10 +36,17 @@ const gameState = {
     movementRange: null,
     moveToPickUnit: null, // unit waiting for destination click
     eventsEnabled: true,  // town events toggle (On/Off)
+    arrogantMessages: true,  // arrogant AI messages toggle
+    combatSpeed: 1.0,  // combat animation speed multiplier
+    moveSpeed: 1.0,  // movement animation speed multiplier
 
     // Fog of War
     fogOfWar: new FogOfWar(FOG_DIFFICULTY.NORMAL),
     fogDifficulty: FOG_DIFFICULTY.NORMAL,  // current difficulty setting
+
+    // Map overview mode
+    mapOverview: false,
+    mapOverviewSavedCamera: null, // {x, y, zoom} to restore on exit
 };
 
 let renderer, camera, input, turnManager;
@@ -80,6 +88,10 @@ function init() {
     document.getElementById('btnOrders').addEventListener('click', showOrdersPanel);
     document.getElementById('btnList').addEventListener('click', showListPanel);
     document.getElementById('btnReports').addEventListener('click', showReportsPanel);
+    document.getElementById('btnOptions').addEventListener('click', showOptionsDialog);
+    document.getElementById('btnMap').addEventListener('click', toggleMapOverview);
+    document.getElementById('btnSave').addEventListener('click', handleSave);
+    document.getElementById('btnOpen').addEventListener('click', showLoadDialog);
     document.getElementById('closeInfoPanel').addEventListener('click', () => {
         gameState.selectedCity = null;
         gameState.selectedUnit = null;
@@ -88,7 +100,7 @@ function init() {
     });
 
     // Enable previously disabled buttons
-    for (const id of ['btnInvest', 'btnList', 'btnOrders', 'btnReports', 'btnSectors', 'btnEvents', 'btnFog']) {
+    for (const id of ['btnSave', 'btnOpen', 'btnInvest', 'btnList', 'btnOrders', 'btnReports', 'btnSectors', 'btnEvents', 'btnFog', 'btnOptions', 'btnMap']) {
         document.getElementById(id).disabled = false;
     }
 
@@ -495,6 +507,13 @@ function showContextMenu(x, y, items) {
 
 const originalHandleClick = InputHandler.prototype.handleHexClick;
 InputHandler.prototype.handleHexClick = function(hex, key) {
+    // Map overview mode: click to center and exit overview
+    if (gameState.mapOverview) {
+        const { x, y } = axialToPixel(hex.q, hex.r);
+        exitMapOverview(x, y);
+        return;
+    }
+
     const tile = gameState.map.tiles.get(key);
 
     // "Move to" destination pick mode
@@ -1936,6 +1955,172 @@ function showRecruitDialog(city) {
     });
 }
 
+// ─── Options Dialog ────────────────────────────────────────────────
+
+function showOptionsDialog() {
+    let overlay = document.getElementById('optionsOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'optionsOverlay';
+        overlay.className = 'modal-overlay';
+        document.body.appendChild(overlay);
+    }
+
+    const eventsChecked = gameState.eventsEnabled ? 'checked' : '';
+    const fogChecked = gameState.fogOfWar.enabled ? 'checked' : '';
+    const arrogantChecked = gameState.arrogantMessages ? 'checked' : '';
+    const combatSpeed = gameState.combatSpeed ?? 1.0;
+    const moveSpeed = gameState.moveSpeed ?? 1.0;
+
+    overlay.innerHTML = `
+        <div class="options-dialog">
+            <h3>Options</h3>
+            <div class="options-list">
+                <label class="option-toggle">
+                    <input type="checkbox" id="optEvents" ${eventsChecked}>
+                    <span class="option-label">Events</span>
+                    <span class="option-hint">Town events (plague, fires, tech advances)</span>
+                </label>
+                <label class="option-toggle">
+                    <input type="checkbox" id="optFog" ${fogChecked}>
+                    <span class="option-label">Fog of War</span>
+                    <span class="option-hint">Hide unexplored areas of the map</span>
+                </label>
+                <label class="option-toggle">
+                    <input type="checkbox" id="optArrogant" ${arrogantChecked}>
+                    <span class="option-label">Arrogant Messages</span>
+                    <span class="option-hint">AI taunts and arrogant messages</span>
+                </label>
+            </div>
+            <div class="options-sliders">
+                <div class="option-slider-row">
+                    <label for="optCombatSpeed">Combat Animation Speed: <span id="combatSpeedVal">${combatSpeed.toFixed(1)}x</span></label>
+                    <input type="range" id="optCombatSpeed" min="0.25" max="3.0" step="0.25" value="${combatSpeed}">
+                </div>
+                <div class="option-slider-row">
+                    <label for="optMoveSpeed">Movement Animation Speed: <span id="moveSpeedVal">${moveSpeed.toFixed(1)}x</span></label>
+                    <input type="range" id="optMoveSpeed" min="0.25" max="3.0" step="0.25" value="${moveSpeed}">
+                </div>
+            </div>
+            <div class="dialog-buttons" style="margin-top:18px;padding-top:14px;border-top:1px solid #333;">
+                <button id="optCancel" class="btn-secondary">Cancel</button>
+                <button id="optApply" class="btn-primary">Apply</button>
+            </div>
+        </div>
+    `;
+    overlay.style.display = 'flex';
+
+    // Live slider value updates
+    const combatSlider = document.getElementById('optCombatSpeed');
+    const combatValEl = document.getElementById('combatSpeedVal');
+    combatSlider.addEventListener('input', () => {
+        combatValEl.textContent = parseFloat(combatSlider.value).toFixed(1) + 'x';
+    });
+
+    const moveSlider = document.getElementById('optMoveSpeed');
+    const moveValEl = document.getElementById('moveSpeedVal');
+    moveSlider.addEventListener('input', () => {
+        moveValEl.textContent = parseFloat(moveSlider.value).toFixed(1) + 'x';
+    });
+
+    document.getElementById('optCancel').addEventListener('click', () => {
+        overlay.style.display = 'none';
+    });
+
+    document.getElementById('optApply').addEventListener('click', () => {
+        // Read checkbox values
+        const events = document.getElementById('optEvents').checked;
+        const fog = document.getElementById('optFog').checked;
+        const arrogant = document.getElementById('optArrogant').checked;
+        const combatSpeedVal = parseFloat(document.getElementById('optCombatSpeed').value);
+        const moveSpeedVal = parseFloat(document.getElementById('optMoveSpeed').value);
+
+        // Apply settings
+        gameState.eventsEnabled = events;
+        gameState.arrogantMessages = arrogant;
+        gameState.combatSpeed = combatSpeedVal;
+        gameState.moveSpeed = moveSpeedVal;
+
+        // Fog of War: toggle if needed
+        if (gameState.fogOfWar.enabled !== fog) {
+            gameState.fogOfWar.toggle();
+            gameState.fogOfWar.updateVisibility(gameState);
+        }
+
+        // Update toggle button labels
+        const eventsBtn = document.getElementById('btnEvents');
+        if (eventsBtn) eventsBtn.textContent = `Events: ${events ? 'On' : 'Off'}`;
+        const fogBtn = document.getElementById('btnFog');
+        if (fogBtn) fogBtn.textContent = `Fog: ${fog ? 'On' : 'Off'}`;
+
+        _lastInfoKey = null; // force info panel refresh
+        updateStatusBar('Options applied.');
+        overlay.style.display = 'none';
+    });
+}
+
+// ─── Map Overview Mode ─────────────────────────────────────────────
+
+function toggleMapOverview() {
+    if (!gameState.map || gameState.phase !== 'playing') return;
+
+    if (gameState.mapOverview) {
+        exitMapOverview();
+    } else {
+        enterMapOverview();
+    }
+}
+
+function enterMapOverview() {
+    gameState.mapOverview = true;
+
+    // Save current camera state to restore later
+    gameState.mapOverviewSavedCamera = {
+        x: camera.x,
+        y: camera.y,
+        zoom: camera.zoom,
+    };
+
+    // Calculate zoom to fit the entire map on screen
+    const fitZoomWidth = camera.canvasWidth / camera.mapPixelWidth;
+    const fitZoomHeight = camera.canvasHeight / camera.mapPixelHeight;
+    const fitZoom = Math.min(fitZoomWidth, fitZoomHeight) * 0.95;
+
+    // Clamp to camera zoom range
+    camera.zoom = Math.max(camera.minZoom, Math.min(camera.maxZoom, fitZoom));
+
+    // Center the camera on the map center
+    const mapCenterX = camera.mapPixelWidth / 2;
+    const mapCenterY = camera.mapPixelHeight / 2;
+    camera.centerOn(mapCenterX, mapCenterY);
+
+    const btn = document.getElementById('btnMap');
+    if (btn) btn.classList.toggle('active-toggle', true);
+    updateStatusBar('Map Overview — click anywhere to center the map there.');
+}
+
+function exitMapOverview(worldX = null, worldY = null) {
+    gameState.mapOverview = false;
+
+    // Restore camera
+    if (gameState.mapOverviewSavedCamera) {
+        camera.zoom = gameState.mapOverviewSavedCamera.zoom;
+        // If a click location was provided, center there after restoring zoom
+        if (worldX !== null && worldY !== null) {
+            camera.centerOn(worldX, worldY);
+        } else {
+            camera.x = gameState.mapOverviewSavedCamera.x;
+            camera.y = gameState.mapOverviewSavedCamera.y;
+            camera.clamp();
+        }
+        gameState.mapOverviewSavedCamera = null;
+    }
+
+    const btn = document.getElementById('btnMap');
+    if (btn) btn.classList.toggle('active-toggle', false);
+    updateStatusBar('Map overview closed.');
+}
+
 // ─── Utility ──────────────────────────────────────────────────────
 
 function calculateCityRating(city) {
@@ -2040,6 +2225,206 @@ function showTurnNotifications() {
             }
         }
     }
+}
+
+// ─── Save / Load ─────────────────────────────────────────────────
+
+function handleSave() {
+    if (gameState.phase !== 'playing') {
+        updateStatusBar('No active game to save.');
+        return;
+    }
+
+    const result = saveGame(gameState);
+    if (result.success) {
+        const date = new Date(result.timestamp);
+        const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        showNotification('Game Saved', `Turn ${gameState.turn} — ${timeStr}`, 'info', 3000);
+        updateStatusBar(`Game saved (Turn ${gameState.turn}).`);
+    } else {
+        showNotification('Save Failed', result.error || 'Unknown error', 'revolt', 4000);
+        updateStatusBar(`Save failed: ${result.error || 'unknown error'}`);
+    }
+}
+
+function showLoadDialog() {
+    const saves = listSavedGames();
+
+    let overlay = document.getElementById('loadOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'loadOverlay';
+        overlay.className = 'modal-overlay';
+        document.body.appendChild(overlay);
+    }
+
+    let savesHtml;
+    if (saves.length === 0) {
+        savesHtml = '<p style="color:#888;text-align:center;padding:20px;">No saved games found.</p>';
+    } else {
+        savesHtml = saves.map(entry => {
+            const date = new Date(entry.timestamp);
+            const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const diffLabel = entry.difficulty || 'NORMAL';
+            const phaseLabel = entry.phase === 'gameover' ? ' (Ended)' : '';
+            return `
+                <div class="load-entry" data-id="${entry.id}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;margin:4px 0;background:#252525;border:1px solid #3a3a3a;border-radius:4px;cursor:pointer;transition:border-color 0.15s;">
+                    <span style="font-size:22px;color:#8cf;">💾</span>
+                    <div style="flex:1;">
+                        <div style="font-weight:bold;color:#ddd;">Turn ${entry.turn}${phaseLabel}</div>
+                        <div style="font-size:13px;color:#888;">${diffLabel} · ${dateStr} ${timeStr}</div>
+                    </div>
+                    <button class="load-delete-btn" data-id="${entry.id}" style="padding:4px 10px;background:#4a2a2a;color:#f88;border:1px solid #6a4a4a;border-radius:3px;cursor:pointer;font-size:14px;">Delete</button>
+                </div>`;
+        }).join('');
+    }
+
+    overlay.innerHTML = `
+        <div class="load-dialog" style="min-width:380px;max-width:450px;">
+            <h3>Open Saved Game</h3>
+            <div style="max-height:400px;overflow-y:auto;">
+                ${savesHtml}
+            </div>
+            <button id="loadClose" style="margin-top:12px;">Cancel</button>
+        </div>
+    `;
+    overlay.style.display = 'flex';
+
+    // Hover effect
+    overlay.querySelectorAll('.load-entry').forEach(el => {
+        el.addEventListener('mouseenter', () => { el.style.borderColor = '#5a8abf'; });
+        el.addEventListener('mouseleave', () => { el.style.borderColor = '#3a3a3a'; });
+    });
+
+    // Click to load
+    overlay.querySelectorAll('.load-entry').forEach(el => {
+        el.addEventListener('click', (e) => {
+            // Ignore if clicking the delete button
+            if (e.target.classList.contains('load-delete-btn')) return;
+            const id = el.dataset.id;
+            overlay.style.display = 'none';
+            applyLoadedGame(id);
+        });
+    });
+
+    // Delete buttons
+    overlay.querySelectorAll('.load-delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = btn.dataset.id;
+            deleteSavedGame(id);
+            updateStatusBar('Save deleted.');
+            // Refresh dialog
+            showLoadDialog();
+        });
+    });
+
+    document.getElementById('loadClose').addEventListener('click', () => {
+        overlay.style.display = 'none';
+    });
+}
+
+function applyLoadedGame(slotId) {
+    const loaded = loadGame(slotId);
+    if (!loaded) {
+        showNotification('Load Failed', 'Could not load this save.', 'revolt', 4000);
+        updateStatusBar('Load failed: could not read save data.');
+        return;
+    }
+
+    // Apply loaded state to the global gameState
+    gameState.map = loaded.map;
+    gameState.units = loaded.units;
+    gameState.players = loaded.players;
+    gameState.turn = loaded.turn;
+    gameState.phase = loaded.phase;
+    gameState.difficulty = loaded.difficulty;
+    gameState.eventsEnabled = loaded.eventsEnabled ?? true;
+    gameState.currentPlayer = loaded.currentPlayer ?? 0;
+    gameState.winner = loaded.winner;
+
+    // Reset UI state
+    gameState.selectedHex = null;
+    gameState.selectedUnit = null;
+    gameState.selectedCity = null;
+    gameState.hoverHex = null;
+    gameState.movementRange = null;
+    gameState.moveToPickUnit = null;
+
+    // Re-link player._gameState references
+    for (const player of gameState.players) {
+        player._gameState = gameState;
+    }
+
+    // Rebuild AI players Map
+    aiPlayers.clear();
+    resetUnitIds();
+
+    // Advance the unit ID counter past the highest loaded unit ID so
+    // future recruits don't collide. resetUnitIds() resets the module-
+    // level counter to 0; we create throwaway units to bump it past max.
+    let maxUnitId = 0;
+    for (const unit of gameState.units) {
+        if (unit.id > maxUnitId) maxUnitId = unit.id;
+    }
+    const _trash = [];
+    for (let i = 0; i <= maxUnitId; i++) {
+        _trash.push(createUnit(UNIT_TYPE.SCOUT, 0, { q: 0, r: 0, knowledge: 0, id: -1 }));
+    }
+    // _trash is discarded; counter is now past maxUnitId
+
+    for (let i = 1; i < gameState.players.length; i++) {
+        const player = gameState.players[i];
+        if (!player.isHuman) {
+            // Reconstruct personality key from the personality object
+            let persKey = 'AGGRESSIVE';
+            const pers = player.personality;
+            if (pers) {
+                for (const [key, val] of Object.entries(AI_PERSONALITY)) {
+                    if (val === pers || (val && pers.name && val.name === pers.name)) {
+                        persKey = key;
+                        break;
+                    }
+                }
+            }
+            aiPlayers.set(i, createAI(player, persKey, gameState.difficulty));
+        }
+    }
+
+    // Set up camera bounds for the loaded map
+    camera.setMapBounds(loaded.map.width, loaded.map.height);
+
+    // Center camera on human player's home city
+    const humanPlayer = gameState.players[0];
+    if (humanPlayer && humanPlayer.homeCityId != null) {
+        const homeCity = loaded.map.cities.find(c => c.id === humanPlayer.homeCityId);
+        if (homeCity) {
+            const pos = axialToPixel(homeCity.q, homeCity.r);
+            camera.centerOn(pos.x, pos.y);
+        }
+    }
+
+    // Create a fresh TurnManager
+    turnManager = new TurnManager(gameState, aiPlayers);
+
+    // Initialize Fog of War for loaded game
+    const diffConfig = DIFFICULTY[gameState.difficulty] || DIFFICULTY.NORMAL;
+    gameState.fogDifficulty = VIS_TO_FOG[diffConfig.visibility] || FOG_DIFFICULTY.NORMAL;
+    gameState.fogOfWar.reset(gameState.fogDifficulty);
+    gameState.fogOfWar.updateVisibility(gameState);
+
+    // Update events button label
+    const eventsBtn = document.getElementById('btnEvents');
+    if (eventsBtn) eventsBtn.textContent = `Events: ${gameState.eventsEnabled ? 'On' : 'Off'}`;
+
+    // Update fog button label
+    const fogBtn = document.getElementById('btnFog');
+    if (fogBtn) fogBtn.textContent = `Fog: ${gameState.fogOfWar.enabled ? 'On' : 'Off'}`;
+
+    _lastInfoKey = null;
+    updateStatusBar(`Loaded game — Turn ${gameState.turn}. ${gameState.players.length} players.`);
+    showNotification('Game Loaded', `Turn ${gameState.turn}`, 'info', 3000);
 }
 
 function gameLoop() {
