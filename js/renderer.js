@@ -373,6 +373,7 @@ export class Renderer {
 
     drawHUD(gameState) {
         const ctx = this.ctx;
+        const hudMargin = 50; // keep HUD text above browser bottom edge / hint bar
 
         // Turn info
         ctx.fillStyle = '#ddd';
@@ -383,7 +384,7 @@ export class Renderer {
         const player = gameState.players && gameState.players[gameState.currentPlayer];
         const gold = player ? player.treasury : 0;
         const turnText = `Turn: ${gameState.turn || 1}`;
-        ctx.fillText(turnText, 10, this.canvas.height - 25);
+        ctx.fillText(turnText, 10, this.canvas.height - hudMargin);
 
         // Calculate income per turn
         let income = 0;
@@ -400,17 +401,17 @@ export class Renderer {
         ctx.fillStyle = '#ffd700';
             ctx.font = 'bold 24px monospace';
         ctx.textAlign = 'right';
-        ctx.fillText(`Gold: ${gold}`, this.canvas.width - 15, this.canvas.height - 28);
+        ctx.fillText(`Gold: ${gold}`, this.canvas.width - 15, this.canvas.height - hudMargin - 5);
         ctx.fillStyle = '#8fcc5a';
             ctx.font = 'bold 17px monospace';
-        ctx.fillText(`+${income}/turn`, this.canvas.width - 15, this.canvas.height - 8);
+        ctx.fillText(`+${income}/turn`, this.canvas.width - 15, this.canvas.height - 25);
 
         // Score display
         if (player && player.score !== undefined) {
             ctx.fillStyle = '#c8a8ff';
                 ctx.font = 'bold 17px monospace';
             ctx.textAlign = 'left';
-            ctx.fillText(`Score: ${player.score.toLocaleString()}`, 120, this.canvas.height - 8);
+            ctx.fillText(`Score: ${player.score.toLocaleString()}`, 150, this.canvas.height - 25);
         }
 
         // Hovered hex info
@@ -423,7 +424,7 @@ export class Renderer {
                     info += ` — ${tile.city.name} (Pop: ${tile.city.population})`;
                 }
                 ctx.font = '14px monospace';
-            ctx.fillText(info, 10, this.canvas.height - 50);
+            ctx.fillText(info, 10, this.canvas.height - hudMargin - 25);
             }
         }
     }
