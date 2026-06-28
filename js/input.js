@@ -3,6 +3,7 @@
 import { pixelToAxial, hexKey, hexNeighbors } from './hex.js';
 import { getMoveCost } from './config.js';
 import { tryCaptureCity } from './combat.js';
+import { animationManager } from './animation.js';
 
 export class InputHandler {
     constructor(canvas, camera, gameState) {
@@ -338,7 +339,7 @@ export class InputHandler {
         return path;
     }
 
-    // Animate unit movement step by step (~150ms per hex)
+    // Animate unit movement step by step with smooth sliding
     moveUnit(unit, target) {
         const path = this.findPath(unit, target);
         if (!path || path.length === 0) return;
@@ -348,7 +349,7 @@ export class InputHandler {
         this.gameState.movementRange = null;
 
         let stepIndex = 0;
-        const stepDelay = 150; // ms per hex
+        const stepDelay = 280; // ms per hex slide (animation handles the visual)
 
         const step = () => {
             if (stepIndex >= path.length) {
@@ -358,6 +359,13 @@ export class InputHandler {
             }
 
             const next = path[stepIndex];
+            const fromQ = unit.q;
+            const fromR = unit.r;
+
+            // Trigger slide animation
+            animationManager.slideUnit(unit, fromQ, fromR, next.q, next.r, stepDelay);
+
+            // Update logical position immediately (animation interpolates visually)
             unit.q = next.q;
             unit.r = next.r;
             unit.movesRemaining = Math.max(0, unit.movesRemaining - next.cost);

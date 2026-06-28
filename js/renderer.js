@@ -201,9 +201,18 @@ export class Renderer {
 
         const ctx = this.ctx;
 
+        // ── Screen shake offset ──
+        const anim = gameState.animations;
+        let shakeX = 0, shakeY = 0;
+        if (anim) {
+            const shake = anim.getScreenShake();
+            shakeX = shake.x;
+            shakeY = shake.y;
+        }
+
         ctx.save();
         ctx.scale(camera.zoom, camera.zoom);
-        ctx.translate(-camera.x, -camera.y);
+        ctx.translate(-camera.x + shakeX, -camera.y + shakeY);
 
         // Draw all visible tiles
         this.drawTiles(gameState, camera);
@@ -216,12 +225,12 @@ export class Renderer {
         // Draw cities
         this.drawCities(gameState, camera);
 
-        // Draw units
+        // Draw units (with animation offsets)
         this.drawUnits(gameState, camera);
 
-        // Draw selection highlight
+        // Draw selection highlight (animated pulse)
         if (gameState.selectedHex) {
-            this.drawHexHighlight(gameState.selectedHex.q, gameState.selectedHex.r, '#ffffff', 2);
+            this.drawAnimatedHexHighlight(gameState.selectedHex.q, gameState.selectedHex.r, '#ffffff', 2, anim);
         }
 
         // Draw selected unit's movement range
@@ -236,9 +245,9 @@ export class Renderer {
             this.drawMovementWidget(gameState, camera);
         }
 
-        // Draw hover highlight
+        // Draw hover highlight (animated)
         if (gameState.hoverHex) {
-            this.drawHexHighlight(gameState.hoverHex.q, gameState.hoverHex.r, 'rgba(255, 255, 255, 0.2)', 1, true);
+            this.drawAnimatedHexHighlight(gameState.hoverHex.q, gameState.hoverHex.r, 'rgba(255, 255, 255, 0.2)', 1, anim, true);
         }
 
         ctx.restore();
@@ -337,12 +346,15 @@ export class Renderer {
         const ctx = this.ctx;
         const { units } = gameState;
         if (!units) return;
+        const anim = gameState.animations;
 
         // Group units by hex to offset stacked units
         const hexGroups = new Map();
         for (const unit of units) {
             // Skip enemy units hidden by fog of war
             if (gameState.fogOfWar && !gameState.fogOfWar.isUnitVisible(unit)) continue;
+            // Skip units that are dying (death animation handles them)
+            if (anim && anim.isDying(unit)) continue;
             const key = `${unit.q},${unit.r}`;
             if (!hexGroups.has(key)) hexGroups.set(key, []);
             hexGroups.get(key).push(unit);
@@ -371,8 +383,67 @@ export class Renderer {
                     oy = (i < 2 ? -12 : -2);
                 }
 
-                const ux = x + ox;
-                const uy = y + oy;
+                let ux = x + ox;
+                let uy = y + oy;
+
+                // ── Animation offset: slide, shake, spawn, death ──
+                let scale = 1.0;
+                let alpha = 1.0;
+
+                if (anim) {
+                    const offset = anim.getUnitOffset(unit);
+                    if (offset) {
+                        if (offset.x !== undefined && offset.y !== undefined && !offset.spawning && !offset.dying) {
+                            // Slide animation — use interpolated position
+                            ux = offset.x + ox;
+                            uy = offset.y + oy;
+                        }
+                        if (offset.shakeX !== undefined) {
+                            ux += offset.shakeX;
+                            uy += offset.shakeY;
+                        }
+                        if (offset.spawning) {
+                            // Spawn: scale up with bounce
+                            scale = 0.3 + 0.7 * easeOutBack(offset.progress);
+                            alpha = offset.progress;
+                        }
+                        if (offset.dying) {
+                            // Death: scale down and fade
+                            scale = 1.0 - offset.progress * 0.8;
+                            alpha = 1.0 - offset.progress;
+                        }
+                    }
+                }
+
+                // ── Selection pulse ──
+                let glowRadius = 0;
+                let glowColor = null;
+                if (gameState.selectedUnit === unit && anim) {
+                    const pulse = anim.getSelectionPulse();
+                    glowRadius = 4 + pulse * 6;
+                    glowColor = color;
+                }
+
+                ctx.save();
+                ctx.globalAlpha = alpha;
+
+                // Selection glow ring
+                if (glowRadius > 0) {
+                    ctx.beginPath();
+                    ctx.arc(ux, uy, 10 + glowRadius, 0, Math.PI * 2);
+                    ctx.strokeStyle = glowColor;
+                    ctx.lineWidth = 2;
+                    ctx.globalAlpha = alpha * 0.4;
+                    ctx.stroke();
+                    ctx.globalAlpha = alpha;
+                }
+
+                // Apply scale for spawn/death
+                if (scale !== 1.0) {
+                    ctx.translate(ux, uy);
+                    ctx.scale(scale, scale);
+                    ctx.translate(-ux, -uy);
+                }
 
                 // Unit circle
                 ctx.beginPath();
@@ -389,6 +460,8 @@ export class Renderer {
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(stats.symbol, ux, uy);
+
+                ctx.restore();
             }
 
             // Show unit count badge if more than 3
@@ -411,7 +484,17 @@ export class Renderer {
         const unit = gameState.selectedUnit;
         if (!unit) return;
 
-        const { x, y } = axialToPixel(unit.q, unit.r);
+        // Use animated position if unit is sliding
+        let { x, y } = axialToPixel(unit.q, unit.r);
+        const anim = gameState.animations;
+        if (anim) {
+            const offset = anim.getUnitOffset(unit);
+            if (offset && offset.x !== undefined && !offset.spawning && !offset.dying) {
+                x = offset.x;
+                y = offset.y;
+            }
+        }
+
         const stat = UNIT_STATS[unit.type];
         const movesLeft = unit.movesRemaining;
 
@@ -520,6 +603,58 @@ export class Renderer {
             ctx.fillStyle = color;
             ctx.fillText(label, lx, ly);
         }
+    }
+
+    // Animated hex highlight with pulsing glow
+    drawAnimatedHexHighlight(q, r, color, lineWidth = 2, anim = null, fill = false) {
+        const ctx = this.ctx;
+        const { x, y } = axialToPixel(q, r);
+        const corners = hexCorners(x, y);
+
+        // Get pulse value if animation manager available
+        let pulse = 0;
+        if (anim) {
+            pulse = anim.getSelectionPulse();
+        }
+
+        // Fill (if requested)
+        if (fill) {
+            ctx.beginPath();
+            ctx.moveTo(corners[0].x, corners[0].y);
+            for (let i = 1; i < 6; i++) {
+                ctx.lineTo(corners[i].x, corners[i].y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
+
+        // Pulsing glow
+        if (anim) {
+            ctx.save();
+            ctx.globalAlpha = 0.3 + pulse * 0.4;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth + pulse * 2;
+            ctx.beginPath();
+            ctx.moveTo(corners[0].x, corners[0].y);
+            for (let i = 1; i < 6; i++) {
+                ctx.lineTo(corners[i].x, corners[i].y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // Solid outline
+        ctx.beginPath();
+        ctx.moveTo(corners[0].x, corners[0].y);
+        for (let i = 1; i < 6; i++) {
+            ctx.lineTo(corners[i].x, corners[i].y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lineWidth;
+        ctx.stroke();
     }
 
     drawHexHighlight(q, r, color, lineWidth = 2, fill = false) {
@@ -763,4 +898,11 @@ export class Renderer {
         const b = parseInt(hex.slice(5, 7), 16);
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
+}
+
+// ── Easing functions needed by renderer (imported from animation.js) ──
+function easeOutBack(t) {
+    const c1 = 1.70158;
+    const c3 = c1 + 1;
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
 }

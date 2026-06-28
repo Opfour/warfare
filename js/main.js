@@ -17,6 +17,7 @@ import { FogOfWar, FOG_DIFFICULTY } from './fog.js';
 import { getHint, resetHints } from './hints.js';
 import { recalculateSectorOwnership } from './sectors.js';
 import { saveGame, loadGame, listSavedGames, deleteSavedGame } from './save.js';
+import { animationManager } from './animation.js';
 
 // Game state — single source of truth
 const gameState = {
@@ -616,6 +617,20 @@ function showCombatDialog(attacker, defender) {
 
         if (action === 'withdraw') {
             const result = runCombatRound(attacker, defender, gameState.map);
+            // ── Combat animation ──
+            animationManager.combatFlash(defender.q, defender.r, '#ffff66', false);
+            animationManager.shakeUnit(defender, 6, 300);
+            animationManager.shakeUnit(attacker, 4, 250);
+            if (result.defenderDead) {
+                animationManager.explosion(defender.q, defender.r, PLAYER_COLORS[defender.owner] || '#ff4444');
+                animationManager.unitDeath(defender);
+                animationManager.shakeScreen(10, 500);
+            }
+            if (result.attackerDead) {
+                animationManager.explosion(attacker.q, attacker.r, PLAYER_COLORS[attacker.owner] || '#ff4444');
+                animationManager.unitDeath(attacker);
+                animationManager.shakeScreen(10, 500);
+            }
             logCombatResult(result, attacker, defender);
             cleanupCombat(attacker, defender, overlay);
             overlay.style.display = 'none';
@@ -673,6 +688,27 @@ function showCombatDialog(attacker, defender) {
 
             const result = runCombatRound(attacker, defender, gameState.map);
             rounds++;
+
+            // ── Combat animations ──
+            animationManager.combatFlash(defender.q, defender.r, '#ffff66', false);
+            animationManager.shakeUnit(defender, 6, 300);
+            animationManager.shakeUnit(attacker, 4, 250);
+            if (result.attackerLoss > 0) {
+                animationManager.floatText(attacker.q, attacker.r, `-${result.attackerLoss}`, '#ff6644');
+            }
+            if (result.defenderLoss > 0) {
+                animationManager.floatText(defender.q, defender.r, `-${result.defenderLoss}`, '#ff6644');
+            }
+            if (result.defenderDead) {
+                animationManager.explosion(defender.q, defender.r, PLAYER_COLORS[defender.owner] || '#ff4444');
+                animationManager.unitDeath(defender);
+                animationManager.shakeScreen(10, 500);
+            }
+            if (result.attackerDead) {
+                animationManager.explosion(attacker.q, attacker.r, PLAYER_COLORS[attacker.owner] || '#ff4444');
+                animationManager.unitDeath(attacker);
+                animationManager.shakeScreen(10, 500);
+            }
 
             if (logEl) {
                 logEl.innerHTML += `<div>Round ${rounds}: You lost ${result.attackerLoss}, enemy lost ${result.defenderLoss}</div>`;
@@ -1907,6 +1943,7 @@ function showRecruitDialog(city) {
                 city.population = Math.max(100, Math.floor(city.population - conscripted));
                 const unit = createUnit(type, 0, city);
                 gameState.units.push(unit);
+                animationManager.unitSpawn(unit);
             }
 
             updateStatusBar(`${count}x ${stats.name} recruited at ${city.name}. Treasury: ${player.treasury}g`);
@@ -1941,6 +1978,7 @@ function showRecruitDialog(city) {
                 newUnit.maxTroops = splitCount;
                 unit.troops = unit.troops - diff;
                 unit.maxTroops = unit.troops;
+                animationManager.unitSpawn(newUnit);
             }
 
             const stats = UNIT_STATS[unit.type];
@@ -2167,6 +2205,9 @@ function handleCityCapture(unit, city, verb) {
     const unitName = getUnitDisplayName(unit);
     showNotification(`${city.name} ${verb}!`, `${unitName} has ${verb} ${city.name}.`, 'info');
     updateStatusBar(`${unitName} ${verb} ${city.name}!`);
+    // ── Capture animation ──
+    animationManager.captureFlash(city.q, city.r, PLAYER_COLORS[unit.owner] || '#ffd700');
+    animationManager.shakeScreen(6, 400);
     // Force info panel refresh
     _lastInfoKey = null;
 }
@@ -2432,7 +2473,11 @@ function gameLoop() {
         camera.update();
         updateInfoPanel();
     }
+    animationManager.update();
+    gameState.animations = animationManager;
     renderer.draw(gameState, camera);
+    animationManager.drawEffects(renderer.ctx, camera);
+    animationManager.drawFade(renderer.ctx, renderer.canvas.width, renderer.canvas.height);
     requestAnimationFrame(gameLoop);
 }
 
