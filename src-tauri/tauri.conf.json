@@ -31,7 +31,8 @@
     "active": true,
     "targets": ["nsis"],
     "icon": [
-      "icons/icon.ico"
+      "icons/icon.ico",
+      "icons/icon_square.png"
     ],
     "resources": [],
     "externalBin": [],
