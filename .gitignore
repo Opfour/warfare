@@ -1,26 +1,11 @@
+# Tauri build artifacts
+src-tauri/target/
+dist/
+
+# Windows build outputs (distributed via GitHub Releases, not tracked)
+*.zip
+*.exe
+
+# OS files
 .DS_Store
-node_modules/
-*.swp
-*.swo
-*~
-
-# Sensitive files
-.env
-.env.*
-*.key
-*.pem
-*.p12
-*.pfx
-credentials.json
-token.pickle
-*.secret
-
-# OpenClaw credentials
-.openclaw/
-openclaw.json
-
-# Original game archives (reference material, not game code)
-warfare103/
-warfare107/
-dosbox_c/
-warfare_manual_v103.txt
+Thumbs.db
