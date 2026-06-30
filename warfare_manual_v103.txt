@@ -1,0 +1,1774 @@
+
+
+
+Warfare 1.0 
+
+
+Overview, Documentation and Strategies.
+
+Written by Game Author Patrick Gallagher
+
+
+Copyright   Patrick Gallagher, All Rights Reserved
+
+
+Table of Contents
+
+
+Introduction	        5
+
+Game Elements	        6
+
+Unit	         6
+
+Strength	            6
+
+Armor	            6
+
+Technology	            6
+
+Movement	            6
+
+Number of Soldiers	            6
+
+Leadership	            6
+
+Unit Rating	            7
+
+Unit Strength	            7
+
+Visibility	            7
+
+Town	         7
+
+Technology	            7
+
+Defense	            7
+
+Population	            7
+
+Recruits Available	            7
+
+Leader	         7
+
+Leadership	            8
+
+Attack Style	            8
+
+Funding Type	            8
+
+Temperament	            8
+
+Reaction To Other Leaders            9
+
+Sector	         9
+
+Taxes	         9
+
+Events	       10
+
+Round	       10
+
+Terrain	       10
+
+Arrogant Messages	       10
+
+Scoring	      11
+
+Summary of Scoring	       11
+
+Winning the Game	      11
+
+Starting a New Game	      12
+
+Adding Leaders	       12
+
+Setting the Difficulty	       12
+
+Easy	          12
+
+Normal	          12
+
+Hard	          13
+
+KILL THE HUMAN	          13
+
+Customizing The Map	       13
+
+Map Dimensions	          13
+
+Terrain	          13
+
+Sector Grid	          13
+
+Number of Towns            	          14
+
+Max Town Tech	          14
+
+Begin New Game	       14
+
+
+Game Maps	      15
+
+Main Map	       15
+
+Scrolling the Main Map	          15
+
+Full Map View	       15
+
+Scrolling the Full Map View         15
+
+GOTO Location Mode	          15
+
+Selecting Main Map Location     16
+
+Controlling Units	      17
+
+Activating Unit Orders	       17
+
+All Units Mode	          17
+
+Units In A Town Mode	          17
+
+Units In A Map Square Mode     17
+
+Single Unit Mode	          17
+
+Manual Control	       17
+
+Manually Moving A Unit	          17
+
+Automatic Control	       18
+
+Defend Location	          18
+
+Scout Neutral Towns	          18
+
+Goto Location	          18
+
+Search and Destroy	          18
+
+Attack Enemy Towns	          18
+
+Merging and Splitting Units	       18
+
+Merging Units	          18
+
+Splitting Units	          19
+
+Maintaining Units	       19
+
+Ruling Towns	      20
+
+First Town - The Capital	       20
+
+Activating Town Control	       20
+
+Unit Management	       20
+
+Creating Units	          20
+
+Upgrading Units	          21
+
+Protecting Towns	          21
+
+Funding	       21
+
+How To Fund	          21
+
+Civil Fund	          22
+
+Defense Fund	          22
+
+Technology Fund	          22
+
+Unit Defense Fund	          22
+
+Maintaining Towns	       22
+
+Controlling Sectors	      23
+
+How To Control A Sector	       23
+
+Adjacent Sectors	       23
+
+Combat	      24
+
+Unit(s) to Unit(s)	       24
+
+Unit(s) to Town	       24
+
+Unit \ Town List	      25
+
+Unit List	       25
+
+Town List	       25
+
+List Type	       25
+
+Reports	      26
+
+Leader Detail	       26
+
+Army Combat Statistics	       27
+
+Changes From Previous Round      27
+
+Leader Summary	       28
+
+Sector Ownership	       28
+
+Leader's Hall of Fame	       28
+
+Strategy	      30
+
+Basic Strategies	       30
+
+Starting A New Game	       30
+
+Growth Without Combat        	       30
+
+Protect Against Attack	       31
+
+Contributing To Town Funds	       31
+
+Attack For The Increase Of Taxes 31
+
+Stacking/Merging Units	       32
+
+Capturing A Capital	       32
+
+Game Options	      33
+
+Glossary	      34
+
+
+Introduction
+
+
+Warfare is a game of conquest in which the Player will try to take and hold as much of the map as necessary to destroy the Computer leaders.
+
+
+The game is won when the Player is the only leader left.
+
+
+The game is lost when the unit containing the Player's leader is defeated.
+
+
+Leaders, both Player and Computer, gain control of towns to gather taxes and build combat units to make up an army. The taxes are gathered from towns, controlled by each leader, based on their population and distance from other towns controlled by the leader.
+
+
+A leader controls a sector if all the towns in that sector are under the leader's rule. Towns in a controlled sector produce more tax money. Towns in sectors that are adjacent, in any direction, to other sectors controlled by the same leader, produce even more taxes. The more controlled sectors that border neighbors, the more taxes the ruled towns will produce.
+
+
+Tax money is then used for either town funding, maintenance or army unit building. A leader is eliminated from play when it surrenders, giving the attacker its entire army and all ruled towns, or are if leader is destroyed.
+
+
+This is what Warfare is: A battle for control of the map until there is only one ruler.
+
+
+Game Elements
+
+
+These are the basic elements that make up the game of Warfare. Each has its importance in understanding and playing the game.
+
+
+Unit
+
+
+A Unit defines the military aspect of the game. Units (1) control town rulership, (2) are used for attacks on enemy towns and (3) provide defense against enemy attack. Units, other than the starting 'Command Unit,' are built in towns controlled by their leader. Units are created with unique names and, while they can be renamed by a Player, no two units can have the same name in a game. The color combination of a unit is selected by the Players in the beginning of a new game when the leaders are created.
+
+
+Units have certain Attributes and Statistics that effect there effectiveness in a game.
+
+
+Strength
+
+The Strength of a unit determines the unit's offensive capability in combat. The Strength can only be set as high as the Technology of the town in which the unit is created or upgraded.
+
+	
+
+Armor
+
+The Armor of a unit determines the unit's defensive capability in combat. The Armor can only be set as high as the Technology of the town in which the unit is created or upgraded.
+
+
+Technology
+
+The Technology of a unit assists a unit's offensive and defensive capabilities in combat. Technology also will allow the unit to move unseen by other leaders if the unit's Technology is higher than those around it. The Technology can only be set as high as the Technology of the town in which the unit is created or upgraded.
+
+
+Movement
+
+The Movement of a unit determines how many squares the unit may move in a round. Movement also determines the order in which the leaders will get control of their units with those having the largest movement moving first in a round. Movement, finally, has a minor influence on the unit's offensive and defensive capabilities in combat. The Movement is the bottom number that appears on the graphic representation of the unit when the unit is visible. The Movement can only be set as high as the Technology of the town, in which the unit is created or upgraded, divided by five with one added. Maximum Movement = ( Technology / 5 ) + 1.
+
+
+Number of Soldiers
+
+The Number of Soldiers in a unit is just that, the number of soldiers that is in the unit. This is the most important aspect of combat since the unit is defeated when all of its soldiers are killed. Soldiers can be added to the unit in a town or from a merge in the field. The maximum number of soldiers in any unit is 30,000. In a town, the Number of Soldiers added to the unit is limited by the money of the leader and the amount of the population that is available to become soldiers.
+
+
+Leadership
+
+The Leadership stat of a unit is the number of combat victories for the unit. Leadership effects the offensive and defensive capabilities of the unit in combat because it is the experience of the unit commander in combat situations. As this stat increases, the unit becomes better at winning a unit to unit combat. Leadership for a new unit is zero.
+
+
+Unit Rating
+
+The Unit Rating is a summation of the Strength, Armor and Technology attributes of the unit. This determines the unit's effectiveness when compared to other units in the game. The Unit Rating is the top number that appears on the graphic representation of the unit when the unit is visible.
+
+
+Unit Strength
+
+The Unit Strength is the Unit Rating of the unit multiplied by the Number of Soldiers in the unit. The Unit Strength can be seen in the Unit List dialog.
+
+
+Visibility
+
+Defines how or if enemy units are actually seen by Player. There are two levels of units being seen: spotted and detailed. A spotted unit means that the unit has been seen and its leader identified. Detailed means that in addition to the spotted information, the unit rating and number of soldiers has also been identified. Technology of the hider and the spotter both influence the result.
+
+
+Town
+
+
+A Town defines the strategic aspect of the game. Ruling towns is how leaders build their armies and collect their taxes. Towns are ruled by the leader who has a unit in the town. Towns without a unit present are neutral and can be ruled by just moving a unit on to it.
+
+
+Towns have certain Attributes and Statistics that effect its effectiveness in a game.
+
+
+Technology
+
+The Technology of a town assists the defensive capabilities of units that are in the town during a combat. The Technology also determines the maximum attributes of units that are created in the town. A town's Technology can be increased by contributing money to the town's Technology fund.
+
+
+Defense
+
+The Defense of a town greatly assists the defensive capabilities of units that are in the town during a combat. A town's Defense can be increased by contributing money to the town's Defense fund.
+
+
+Population
+
+The Population of a town determines the base amount of taxes that a leader gets from ruling the town. The Population also effects the number of Recruits Available in the town. A town's Population can be increased by contributing money to the town's Civil fund that is more than the town's Population.
+
+
+Recruits Available
+
+The Recruits Available, in a town, determines the number in a town's Population that can become soldiers in the leader's units. The Recruits Available will increase with the Population.
+
+
+Leader
+
+
+The Leaders are those who are actually controlling the armies. Leaders, both Player and Computer, are represented in the game as the starting unit 'Command Unit'. The Leader can be moved to another unit by the Player but the Computer leaders will not. Defeat of the unit containing an army's Leader will remove that army from the game.
+
+
+Leaders have certain characteristics that effect its actions in a game.
+
+Please note that when Computer leaders are in trouble, they will alter the use of these settings.
+
+
+Leadership
+
+The Leadership of a leader in the game represents the effectiveness of its units in combat. One is added to Leadership for each unit victory and one is minused for each loss. This stat effects the performance of units, that are controlled by the leader, during combat in either a positive or negative way depending on the value of the stat.
+
+
+Attack Style 
+
+(Computer Leaders only)
+
+The Attack Style of a Computer leader determines the size and strength of the attack units that is uses to invade enemy towns. Each style has its own strengths and weaknesses.
+
+
+Conservative
+
+This style means that the leader will use a few strong invaders.
+
+
+Normal
+
+This style means that the leader will use several medium strength invaders.
+
+
+Aggressive
+
+This style means that the leader will use a whole lot of weak invaders. (Swarms)
+
+
+Funding Type
+
+(Computer Leaders only)
+
+The Funding Type of a Computer leader will determine how it allocates its tax money to the various funds and the purchase unit soldiers.
+
+
+Ultra-Conservative
+
+This type is extremely defensive and works toward internal infrastructure at the expense of attack capabilities. A leader with this funding type will not be at all aggressive, but it will be hard to defeat due to a huge population and strong defense.
+
+
+Conservative
+
+This type is defensive and works toward having slightly more defensive than offensive capabilities. A leader with this funding type will be a little less aggressive due to its concentration on defense.
+
+
+Normal
+
+This type is a balance of defensive and offensive capabilities. There are no real weaknesses to this type, but also no fortresses to break into or huge invasion forces to watch for.
+
+
+Aggressive
+
+This type is offensive and works toward having slightly more offensive than defensive capabilities. To increase the attack forces that are used in battle, this leader will take funding away from defense and civil funds.
+
+
+INSANE
+
+This type is extremely offensive and works toward invasion being the best form of defense. A leader with this funding type will be VERY aggressive, but it will very lacking in the defense of its towns. 
+
+
+Temperament 
+
+(Computer Leaders only)
+
+A Computer leader's Temperament has to deal with its attitude toward the other leaders in the game. Temperament determines how the leader will react to attacks from other leaders as well as the attitude toward the leader winning the game. See Reaction To Other Leaders in this section.
+
+
+Forgiving
+
+This Temperament will allow the leader to concentrate more on the logical execution of winning the game. The leader is slow to anger and quick to forgive.
+
+
+Normal
+
+This Temperament is the average of forgiving and holding a grudge against the other leaders in the game.
+
+
+Quick to Anger
+
+This Temperament will have the leader overreacting to attacks on his property and will be slow to forgive any who angers it.
+
+
+Vengeful
+
+This Temperament will have the leader acting more in anger than in logic. The leader takes any action against it as deeply personal and will, at times, sacrifice the lives of its soldiers for revenge. This Temperament knows very little forgiveness.
+
+
+Reaction To Other Leaders 
+
+(Computer Leaders only)
+
+Each Computer leader has a relationship to each other leader in the game. This relationship can influence which towns a leader will attack in a round. A leader is more likely to attack a leader that it has a strongly negative feeling for as opposed to a neutral one. The best reaction a leader can have to another is Neutral. The worst is MUST KILL.
+
+
+A leader's Reaction To Other Leaders will become more negative during a game due to attacks and from a leader having the biggest empire (Envy and fear).
+
+
+A leader's Reaction To Other Leaders will become more positive with time or attacks of that leader against other leaders (Remember, everyone is against everyone else).  If a leader attacks another leader, it benefits all other leaders in the game.
+
+
+Changes in the leader relationships are dependent on the Temperament of the leader.
+
+
+Stages of Reactions:
+
+Neutral, Miffed, Unhappy, Annoyed, Angry, Hate, Despise, MUST KILL.
+
+
+Sector
+
+
+The map is divided into a grid of Sectors. Each Sector contains at least one town. Controlling all towns inside a Sector means that the leader rules that Sector. Ruling a sector increases the tax output of the towns inside and around the Sector that are controlled by the leader. Adjacent controlled Sectors increase taxes even more.
+
+
+Taxes
+
+
+Taxes are the ultimate resource in the game. Taxes allow the leaders to build armies, improve towns by funding, and maintain both the armies and the towns. Taxes are collected based on the total population of the towns ruled by each leader. The Taxes are increased by the amount of sector control. The more sectors controlled by the leader around the town's sector (including the town's sector) increase the taxes a town will produce.
+
+
+Events
+
+
+There is a random chance that a ruled town will experience an Event. Events can be beneficial or damaging to a town. Events range from a brilliant advance, that greatly increases a town's defense and technology, to an earthquake that can devastate a town. If a leader is winning the game, there is more of a chance that an event will occur that will be negative. Also, a leader who is losing a game will have a greater chance of a positive event happening in one of its controlled towns. Events can be turned off by checking off the option in the Game Options dialog.
+
+
+Round
+
+
+The Round is the time indicator that controls the game. A Round starts with a movement phase in which all units that will move are going to move. Then the Player and the Computer leaders will spend tax money on armies and funding, as well as give orders to units to move in the next Round. The Player must manually end each Round by selecting the END TURN button on the Command Bar or by typing the 'E' key from the main screen.
+
+
+Terrain
+
+
+There are five different types of Terrain in Warfare: Grass, Forest, Mountains, Desert and Water. In this initial version of Warfare, the terrain is for decoration and reference only. (A future version of this game will use the Terrain)
+
+
+Arrogant Messages
+
+
+Arrogant Messages are displayed after the Player completes a combat with a Computer leader. No matter what the result of the combat, the messages are a way for the Computer to verbally (but not nastily) abuse the Player. Arrogant Messages can be turned off by checking off the option in the Game Options dialog.
+
+
+Scoring
+
+
+There are two ways to score in a game of Warfare: doing something and holding something.
+
+
+The doing-something part basically refers to combat. Unit combat victories increase the leader's score by 25. However, a victory over a leader unit, therefore defeating the leader, boosts the attacking leader's score by a whopping 10,000.
+
+
+Holding-something refers to control of towns and sectors. To get score points for holding either one, the leader most control the town or sector for any entire round from start to finish.
+
+
+Summary of Scoring
+
+
+Action                                      Score for Action
+
+Unit Combat Victory                                      25
+
+Victory Over Leader                                   10,000
+
+Holding a Town for a Round                          100
+
+Holding a Sector for a Round                         250
+
+
+(Note: The scoring is for reference and comparison only and is not used in determining the victor in a game.)
+
+ _____________________________________________________________________________________
+
+
+Winning the Game
+
+
+Winning the game of Warfare is simply defeating all of the other leaders completely. A Computer leader wins the game if it defeats the Player.
+
+
+(Note: The game winner and game high scorer do not have to be the same leader.)
+
+
+Starting a New Game
+
+
+A new game can be started by either clicking the NEW button on the Toolbar or selecting menu item New in menu File. This will activate the New Game Options dialog, which is used to setup a new game.
+
+
+Adding Leaders
+
+
+When the New Game Options dialog is activated, the Begin New Game button is not enabled. This is because there are no leaders in the game yet. There must be at least two leaders in the game, and one must be the Player. The maximum number of leaders is 12.
+
+
+Select the Add Leader button and this will activate the Add New Leader dialog.
+
+
+If there are no leaders added to a new game, or the Human Leader has not been added yet, then the Add New Leader dialog will default to adding a Human Leader. The only options visible are the leader name (Which can be changed), two checkboxes for Human Leader and Computer Leader (Human Leader is selected), the unit colors (Which can be scrolled through be clicking on the square), and the command buttons (Add Leader, Cancel and Help).
+
+
+If the Human Leader is already added to the game or the Computer Leader checkbox is selected then the Characteristics box becomes visible.
+
+
+The Characteristics box contains dropboxes (In Registered Version Only) that can be used to adjusted the controlling aspects of the Computer Leaders. The fields Attack Style, Funding Type, and Temperament directly correspond to the settings that are defined in the earlier section Leader. There is also a Randomize button (In Both Shareware And Registered Versions) that can randomly generate values for these three settings. Normal is the starting values for each of these settings.
+
+
+Select the Add Leader button to add a configured leader.
+
+
+Setting the Difficulty
+
+
+After you have selected the leaders that you wish to play, you must select the Difficulty Setting for the game.
+
+
+The default difficulty in a new game is Normal, but this can be changed to what ever is wished. Descriptions of the difficulties are as follows:
+
+
+Easy
+
+This difficulty setting has unit visibility set so that all units on the map can be seen in detail by the Player. The Computer opponent(s) tax rate, population growth and technology increases are slightly less than the Player. All leaders start with neutral relationships.
+
+
+Normal
+
+This difficulty setting has unit visibility set to normal so that the Player must have a unit near an enemy to see and make out its details. The Computer opponent(s) tax rate, population growth and technology increases are better than the Player. Computer leader(s) start being annoyed by the Player.
+
+
+Hard
+
+This difficulty setting has unit visibility set to hard so that the Player must have a unit very near an enemy to see it and make out its details. The Computer opponent(s) tax rate, population growth and technology increases are much better than the Player. Computer leader(s) start hating the Player.
+
+
+KILL THE HUMAN
+
+(In Registered Version Only) 
+
+This difficulty setting has unit visibility set to very hard so that the Player must have a unit very, very  near an enemy to see it and make out its details. The Computer opponent(s) tax rate, population growth and technology increases are incredibly better than the Player. Computer leader(s) start with the relationship "MUST KILL" against the Player. THIS IS SUICIDE!
+
+
+Customizing The Map
+
+
+When the New Game Options dialog is activated, the default map settings are visible just above the command buttons: Map is 80x80, Sectors are 5x5, Town Number is 50.
+
+
+These settings mean that the Map is laid out in the size of 80 squares across by 80 squares down, the Sectors are 5 across by 5 down (Which means that each Sector, in this case, is 16 squares across by 16 squares down), and the number of Towns set for the Map is 50.
+
+
+To change these default settings for the Map, select the Customize Map button to activate the Customize Map dialog.
+
+
+Map Dimensions
+
+The dimensions of the map are the number of squares across by the number of squares down that will represent the game map. Map dimensions also determine what Sector Grid layouts are available.
+
+
+The Map Dimensions also effect the maximum Number of Towns that can be set for a game.
+
+
+The choices are 60x60, 80x80, 100x100, 120x120, 150x150 and 180x180.
+
+
+(Note: Map Dimensions larger than 80x80 are available in the Registered Version only) 
+
+
+Terrain
+
+There are five different types of Terrain available to create a map. Grassy plain is the default. The four other Terrain types (Forest, Mountain, Desert and Water) will makeup the characteristics of the map depending on the setting of Map Usage for each one.
+
+
+There are three settings: Low, Medium and High. Each higher setting will increase the usage of that Terrain type.
+
+
+(Note: In this version of Warfare, the terrain has no effect on game play. In future versions of Warfare, terrain will effect movement, unit visibility, town defense and unit to unit combat.)
+
+
+Sector Grid
+
+The Sector Grid selection determines the layout of the sectors used in the game that define the ownership of the game map. The available Sector Grid layouts are dependent on the current Map Dimensions setting.
+
+
+The Sector Grid layout also effects the minimum Number of Towns that can be set for a game.
+
+
+The choices are 4x4, 5x5 and 6x6.
+
+
+Number of Towns
+
+The Number of Towns setting determines how many towns will be on the game map. The towns will be a minimum distance from each other, which is dependent on the Map Dimensions, with at least one town in each sector. The minimum Number of Towns is the number of sectors set for the map. The maximum Number of Towns is determined by the Map Dimensions where larger map layouts will have a larger number of towns possible.
+
+
+Max Town Tech
+
+The Max Town Tech setting will determine the largest possible Technology that a town can have at the start of the game. This effects initial town creation only and does not effect increases caused by funding.
+
+
+Begin New Game
+
+
+After the Player has finished configuring all the options that for a game, the Begin New Game button can be selected to start the game. 
+
+
+(Note: Begin New Game button will only be enabled if there are at least two leaders created and one is the Player.)
+
+
+After the Begin New Game button has been selected, the game will create a new map based on the settings and, in the case of larger maps, this can cause a delay on slower machines.
+
+
+When the game actually begins, the leaders will begin making their initial moves. If the Human leader is the first created, then the Player will move first.
+
+
+Game Maps
+
+
+The game maps are used to represent the battlefield in which Warfare takes place.
+
+
+The maps are made up of two main elements: terrain and towns.
+
+
+There are five different types of terrain in Warfare: Grassy plains, Forest, Mountains, Desert and Water. In this initial version of Warfare, the terrain is for decoration and reference only. (A future version of this game will use the terrain to effect combat, movement and visibility.)
+
+
+Towns are the strategic elements of the game. These are represented by a dark green square. A town that is neutral, not ruled by a leader, will be dark green entirely in the center. A town that is ruled will have the unit color of the leader who rules it.
+
+
+A location on either game map can be identified by placing the cursor on it, and clicking and holding the left mouse button.
+
+
+There are two game maps to be used during a game: Main map and Full Map View.
+
+
+Main Map
+
+
+The Main map is the screen that is active if no other windows have been opened. It is where the game is really played.
+
+
+(Note: The Maps can also be used to activate the Unit Orders and Town Control dialogs. See later sections for details.)
+
+
+Scrolling the Main Map
+
+There are two ways of scrolling the Main Map.
+
+
+The first is to use the keyboard Arrow keys while holding down the Shift key. Hitting the Space bar will center the Main map on the active unit or the Player's capital if no unit is active.
+
+
+The other way of scrolling the Main map is to hold down the right mouse button and move the mouse. Each time the map scrolls, the mouse cursor is placed at the center of the map. So the Player can continue moving the mouse to scroll to the map edges. Double clicking the right mouse button will center the Main map on the active unit or the Player's capital if no unit is active.
+
+
+Full Map View
+
+
+The Full Map View is the map that contains smaller squares and allows more of the map to be seen at a time. The Full Map View dialog is activated in a number of ways including by clicking the MAP Button on the Command bar, typing the 'M' key or the F7 key from the main screen, or selecting the View button in the Unit Orders or Town Control dialog boxes.
+
+
+Scrolling the Full Map View
+
+Scrolling the Full Map View is done from the scroll bars that appear on the bottom and right of the window. If a scroll bar is not visible then the entire map is on the screen along that side.
+
+
+GOTO Location Mode
+
+GoTo Location mode is when the Full Map View has been activated to give the destination of where to send a unit. This mode will change the title of the window to 'Unit Order: GOTO Location'.
+
+
+A location is selected for a destination by double clicking the left mouse button on a map location that is not the current location of the unit (which will be flashing). See section Controlling Units for more.
+
+
+GoTo Location mode is activated by selecting the GoTo Location checkbox in the Order Options section of the Unit Orders dialog box. It can also be activated by clicking the center button of the Movement toolbar (labeled Go To) when a unit is under manual control.
+
+
+Selecting Main Map Location
+
+If the Player double clicks the left mouse button on a location, of the Full Map View, that does not have a unit or town that the Player controls, the Main map will move to that location after the window is exited. This does not work for GoTo Location mode.
+
+
+Controlling Units
+
+
+The use of units in Warfare, as well as any wargame, determines more than anything else who will win a game. Units can be controlled manually or be given any number of automatic commands.
+
+
+Activating Unit Orders
+
+
+The Unit Orders dialog box is how units are given orders by the Player. There are several ways to activate this dialog and four different modes of operation. Units, that can be accessed in each mode, can be controlled by scrolling through them using the scrollbar next to the Unit # x of x field of Unit Orders.
+
+
+All Units Mode
+
+This mode has access to all units that the Player controls. If a unit is currently active, then that unit will be the unit selected when Unit Orders is activated.
+
+
+This mode is activated by selecting the ORDERS button on the Command Bar or by typing the 'O' key from the main screen.
+
+
+Units In A Town Mode
+
+This mode has access to all units that the Player controls inside a town. 
+
+
+This mode is activated by selecting the Orders button in the Town Control dialog box. This mode can also be selected during a round by moving the mouse cursor to a town, controlled by the Player, and double clicking the left mouse button. This works on either the main screen or the Full Map View.
+
+
+(Note: This does not work if Full Map View is activated from Town Control.)
+
+
+Units In A Map Square Mode
+
+This mode has access to all units that the Player controls at a single location. 
+
+
+This mode is activated by moving the mouse cursor to a map location with one or more of the Player's units, and double clicking the left mouse button. This works on either the main screen or the Full Map View.
+
+
+(Note: This does not work if Full Map View is activated from Town Control.)
+
+
+Single Unit Mode
+
+This mode has access to one and only one unit that the Player controls. 
+
+
+This mode is activated by double clicking on the unit entry in the Unit List.
+
+
+Manual Control
+
+
+A unit that is controlled manually, has the Manual Control checkbox checked in the Order Options section of the Unit Orders dialog box.
+
+
+Manual control of a unit means that when the time comes for the unit to move, the Player controls each movement of the unit. The Player even makes the decision of whether the unit should actually enter a town that the unit has made a move towards. Moving into a town, ends a unit's movement for the round.
+
+
+Manually Moving A Unit
+
+A unit is manually moved in one of two ways: using the keyboard's arrow keys or clicking the arrow buttons on the Movement toolbar that will appear if a unit comes under manual control.
+
+
+Automatic Control
+
+
+Giving a unit orders to carry out automatically reduces the need to control each and every unit all of the time. If the Player gives a unit an automatic order, the unit will carry it out until the order is changed or the unit cannot carry out the order any more.
+
+
+Each of the following unit orders corresponds to the checkbox of the same name, in the Order Options section, of the Unit Orders dialog box.
+
+
+(Note: Attack orders are provided as convenience. It is advised that the Player selects the targets of attack.)
+
+
+Defend Location
+
+A unit with the orders of 'Defend Location' will simply remain at the location it was at, on the map, when the order was selected.
+
+
+Scout Neutral Towns
+
+A unit with the orders of 'Scout Neutral Towns' will select a town, which is not controlled by a leader, and move toward it. This order will have the unit select a town that is near, but not one that another unit is already automatically moving toward. This can cause a unit to walk right by a neutral town on its way to another. A unit, with this order selected, will avoid other units and towns along the way.
+
+
+GoTo Location
+
+A unit with the orders of 'GoTo Location' will move to the map location indicated when command was issued. After command is selected, the Full Map View will be activated in GOTO Location mode that allows the Player to double click on a map square to indicated the destination of the unit. Unit will avoid other units and towns along the way.
+
+
+Search and Destroy
+
+A unit with the orders of 'Search and Destroy' will move toward the nearest enemy unit, whether in a town or not, and attack. There is no strategy in this command.
+
+
+Attack Enemy Towns
+
+A unit with the orders of 'Attack Enemy Towns' will move toward, what the Computer leader logic determines to be, the most strategic enemy town to conquer for the Player. Unit will attack enemy units along the way.
+
+
+Merging and Splitting Units
+
+
+Units in the field may be joined or split as the Player sees fit to achieve the desired goals.
+
+
+Merging Units
+
+Merging units means that the value of one or more units is used to build up another unit. Which ever unit is being merged to will grow and the other(s) will be removed unless the total value of the unit being merged is less than the cost of one soldier in the unit being merged to. The Leadership of the new merged unit is that of the unit that had the highest Leadership before the merge.
+
+
+If more than one unit (the unit containing Leader cannot be merged) is in the same map location the command in the Unit Orders dialog box Merge will become active. This will merge units, at the same location, to the unit that Merge command was selected from.
+
+
+Another way to merge units is if any unit, at a location with more than one unit, comes under attack or attacks. If this happens then the Multiple Units At Location dialog box will be activated to prompt the Player if merging of units is desired. The dialog will detail the enemy unit and show the results of a merge if selected. If Player's unit is attacking, them units will be merged to attacker. If Player's is under attack, then units will be merged to most powerful unit type.
+
+
+Splitting Units
+
+
+Splitting a unit divides the selected unit, as evenly as possible, into two different units. However, only the original unit will maintain the unit Leadership since the rating is identified with the unit's commander. The Leadership rating of the new unit is zero.
+
+
+Splitting a unit is done from the Split command in the Unit Orders dialog box. Units containing only one soldier cannot be split.
+
+
+Maintaining Units
+
+
+Each leader must pay for the maintenance of each soldier under its command. This fee will be automatically taken away from the leader's money after taxes are collected (This amount can be seen in the Town Investment dialog box that is activated at the end of all unit movement in a round). The amount of the fee is determined by the attributes of the unit that the soldier is a part of: the higher the attributes, the higher the fee. If there is not enough money to pay all unit maintenance fees, then some soldiers may just disappear.
+
+
+Ruling Towns
+
+
+How a leader rules its towns will determine the eventual outcome of its game. If a leader rules well and the towns under its rule grow and prosper, the leader will likely add more and more towns to its rule. If, however a leader does not rule well, then very likely another leader will soon be ruling those self same towns.
+
+
+First Town -- The Capital
+
+
+When the game begins, all each leader has is a single unit with one soldier and money totaling 150,000. The first thing that a leader should do is to move that unit into a town. When that happens, the leader has a capital. The leader's capital is the town in which the leader actually resides.
+
+
+The location of the leader, the capital, must be very well protected against attack. If the capital is captured and the leader unit is defeated, that leader is out of the game. If that leader is the Player, the game is over.
+
+
+Automatic operations treat the capital differently from the other towns a leader rules. This goes for both the Computer leaders and the Player. When allocating funding and defense troops (Unit Defense Funding for the Player), the capital always gets double because of its great importance.
+
+
+Activating Town Control
+
+
+Town Control is where the Player will perform town specific operations such as creating and upgrading units, individual town funding operations, and accessing other towns.
+
+
+There is more than one way of accessing the Town Control dialog box, but it can only be accessed after the movement phase.
+
+
+The Town Control dialog box can be accessed by clicking the TOWN button on the Command Bar or by typing the 'T' key from the main screen. This will activate Town Control with focus on the Player's capital.
+
+
+Town Control can also be accessed by moving the mouse cursor on a town ruled by the Player and double clicking the left mouse button. This will activate Town Control with focus on the town the cursor was on. This works with both the Main map and the Full Map View.
+
+
+(Note: This does not work if Full Map View is activated from Unit Orders.)
+
+
+Unit Management
+
+
+Towns are where units are created and upgraded. The Technology and available recruits of a town, as well as the available money to build units, dictate their unit strength and usefulness.
+
+
+Creating Units
+
+Units are created by selecting the Create button, in the Town Control dialog box, and activating the Create Unit dialog box.
+
+
+The Create Unit dialog box allows the Player to configure the attributes of the new unit just as it is needed. The maximum allowed attribute is determined by the town the unit is being created in (See section Unit, in Game Elements, for more on unit attributes). The Player can also name the unit as it is wished, as long as the name is unique to the other units in the game.
+
+
+To make unit creation easier, the section Form Units contains three buttons: Defender, Invader and Scout. Each button sets the unit name and attributes to the form for each that is used by the Computer leaders in the game. Each form sets the attributes based on a percentage of the town's Technology. The attributes can then be adjusted as the Player sees fit.
+
+
+Upgrading Units
+
+Units are upgraded by selecting the Upgrade button, in the Town Control dialog box, and activating the Upgrade Unit dialog box (Which is identical to the previously mentioned Create Unit dialog box).
+
+
+The Upgrade Unit dialog box allows the Player to reconfigure the attributes of an existing unit, while keeping the unit's Leadership and current orders in tact. After the Player sets the new attributes of the unit and selects OK, the old unit's value is used to purchase soldiers for the new unit. 
+
+
+Leader must have enough money to purchase at least one soldier (and the town must have at least one recruit available) of the new unit before upgrade takes place.
+
+
+Protecting Towns
+
+How each leader protects its towns determines how long the leader will keep them. It is vital to station enough unit strength to defend in case of attack, and also to delay or deter attack. Computer leaders select targets for attack by a number of factors, one of which is unit defense of towns. The lesser defended towns are more likely to get attacked if all other factors are equal.
+
+
+A strongly defended town can also delay an attack if the total unit strength defending a town is greater than the Computer's attacking unit strength. The unit will stop outside the town and wait for reinforcements (Unfortunately, if the Technology of the unit is much higher than any unit the Player has near it, it will not be seen until it attacks with enough force to conquer the town).
+
+
+To build a strong defense, it is good to have a defender have the smallest Movement possible, since that unit attribute is the most expensive per soldier. This will allow the Player to have more soldiers with higher Strength, Armor and Technology to fight off attacks.
+
+
+Funding
+
+
+The most of a leader's money, during a game of Warfare, will be spent on funding. Funding is the way a leader invests in the improvement, defense and population growth of a leader's towns. Each fund causes gradual improvement in town attributes that will collect over rounds and return important advances.
+
+
+Funding can only be done after all movement in a round is completed.
+
+
+How To Fund
+
+There are two ways to add or remove money to town funds: as a group or individually.
+
+
+Funding to all towns at one time can be done from the Town Investment dialog box, which is activated after all movement is completed if Player has control of any town, or from the Additional Town Investment dialog box, which is activated manually by clicking the INVEST button on the Command bar or by typing the 'I' key from the main screen.
+
+
+Increasing the investment in a fund is done by moving the scroll bar for that fund to the right. This will cause the leader's money to be decreased by the amount added to a fund. The money is divided to towns as soon as the OK button for either dialog box is selected.
+
+
+The other way to invest in town fund is for an individual town by using the Town Control dialog box. See section on Activating Town Control for more.
+
+
+The funding scroll bars in Town Control are for the town in focus only and will reflect any money already invested in that town's funds during the current round. This allows fine-tuning of any funding changes the Player may wish to make.
+
+
+Civil Fund
+
+The Civil Fund is population growth, or if under funded, population shrinkage. This is the only fund that must be contributed to. If a leader does not contribute at least as much money as population, the population will dwindle quickly decreasing the taxes collected in future rounds.
+
+
+When the Town Investment dialog box is activated, the Civil Fund scroll bar starts with an amount of money to maintain the Player's current population (assuming the population is evenly distributed). This is considered the minimum amount to invest since population directly effects income from taxes.
+
+
+Defense Fund
+
+The Defense Fund is for increasing the defense capabilities of the town against attack. The Defense Fund is a gradual increase in the town's Defense attribute that builds over rounds of increases. It may take many rounds of investments to get the town's Defense to rise by 5 (the smallest increment of improvement) so the effects will not be immediate. Also, the higher the town's Defense, the more money that needs to be invested to increase it again.
+
+
+Technology Fund
+
+The Technology Fund is for increasing the technological improvements in the town, which effects enemy unit detection, defense from attack, and creation/upgrade of units. The Technology Fund is a gradual increase in the town's Technology attribute that builds over rounds of increases. It may take many rounds of investments to get the town's Defense to rise by 5 (the smallest increment of improvement) so the effects will not be immediate. Also, the higher the town's Technology, the more money that needs to be invested to increase it again.
+
+
+Unit Defense Fund
+
+The Unit Defense Fund is different from the other funds mentioned. When money is allocated and OK is selected in either the Town Investment or the Additional Town Investment dialogs boxes, the money is spent immediately.
+
+
+The Unit Defense Fund is used in each town to purchase additional soldiers for, or to upgrade if necessary, the town's primary defender unit. Not only units gain soldier increases, but they will also be upgraded with the Technology of the town. Any extra change, from the unit strength boost, is put back into the Player's money.
+
+
+The fund is not available if Town Control, since Player can manually alter units on the normal way.
+
+
+(Note: This works only for units that are of the Defender form of Strength = Armor = Technology and Movement =1.)
+
+
+Maintaining Towns
+
+
+Each leader must pay for the maintenance of each town under its command. This fee will be automatically taken away from the leader's money after taxes are collected (This amount can be seen in the Town Investment dialog box that is activated at the end of all unit movement in a round). The amount of the fee is determined by the attributes of the town: the higher the attributes, the higher the fee. If there is not enough money to pay all town maintenance fees, then the town attributes may just reduce some.
+
+
+Controlling Sectors
+
+
+Controlling sectors should be the goal of the Player's attacks (it is for the Computer leaders). Controlling sectors is the best way to increase a leader's taxes and preventing a leader from controlling sectors is the best way to reduce a leader's taxes.
+
+
+How To Control A Sector
+
+
+Controlling a sector is an easy concept: control all the towns in a sector. 
+
+
+Adjacent Sectors
+
+
+All towns in the sector, and all towns in sectors adjacent to the controlled sector, will produce a greater amount of tax money for the leader who rules them. This means that a town will produce more and more tax money for each controlled sector adjacent to the town's sector, and even more for the town's sector.
+
+
+Combat
+
+
+After all neutral towns have been taken, in a game of Warfare, there's only one way for a leader to 'acquire' more towns. Here's a hint: SEE NAME OF GAME!
+
+
+Yes, here it is, the reason you are reading this now. Good old fashion combat. The test of the Player's mind for strategy over the Computer's.
+
+
+All combat in the game is executed with units. Even if a unit is attacking a town, it is really attacking the units in the town.
+
+
+Unit(s) to Unit(s)
+
+
+Attacking units in the field is more for the Player than the Computer leaders (Sometimes they do attack in the field, if a weak unit gets in the way).
+
+
+The attacker always has the advantage in unit-to-unit combat, but a unit that is 'Dug-In' (A unit can Dig-In if it has two movements left by clicking the DIG button on the Command Bar or by typing the 'D' key from the main screen) is a tough defender in combat.
+
+
+When a unit that is entering combat, and there is more than one unit in its square, it has the option of merging the units to strengthen either the attack or the defense. The Computer leaders will make the decision to merge based on the amount of force necessary to overcome the enemy. The Player will be prompted for whether it wants to merge forces in these combat situations.
+
+
+If a unit loses the combat, it is gone with its soldiers. If a unit wins a combat, its Leadership stat goes up by one. As a unit's Leadership increases, it will be harder to defeat in combat.
+
+
+If a unit of a leader is defeated, the leader's Leadership stat will go down by one (yes, it can be negative). If a unit of a leader is victorious, then the leader's Leadership stat will go up by one. The leader's Leadership will act as either a benefit or hindrance to a unit in combat depending whether it is positive or negative, respectively.
+
+
+Unit(s) to Town
+
+
+Combat between units and towns is very much the same as unit-to-unit. As stated previously, when a unit attacks a town it is really attacking the units in the town.
+
+
+The very important difference is that the unit defenders of the town will have their offensive and defensive capabilities enhanced by the attributes of the town.
+
+
+The town's Defense attribute will greatly enhance the defense of a town's defending units. The amount of the enhancement is dependent on the amount of the attribute itself.
+
+
+The town's Technology attribute will enhance the offensive and defense of a town's defending units. The amount of the enhancement is dependent on the amount of the attribute itself.
+
+
+If a unit defeats the defending units of a town, the town is then neutral and the unit can move in and take control for its leader.
+
+
+If the defeated town has the defender's leader unit (which makes it the defender's capital by definition), then the leader is defeated. If the Player was the attacker, then the Player will be asked to accept surrender. If the Player accepts, then all of the defeated leader's units and towns are the Player's. If the Player declines, then the defender's units disperse and all its towns become neutral.
+
+
+Unit \ Town List
+
+
+This dialog gives a quick overview of the units or towns under the Player's control.
+
+
+Unit List
+
+
+When unit list type is selected (it is the default) the dialog displays all of the units of the Player in a listbox.
+
+
+(NOTE: Double clicking the left mouse button on a unit list entry will activate the Unit Orders for that unit.)
+
+
+Each unit entry has certain information displayed.
+
+
+Unit Name  The name of unit.
+
+
+Orders   Unit's current orders.
+
+
+Location   Where on the map the unit is currently located in coordinates.
+
+
+Rating  The Unit Rating (Strength + Armor + Technology) of the unit.
+
+
+Soldiers  The number of soldiers in the unit.
+
+
+Total Str  The Unit strength (Rating * Number of Soldiers) of the unit.
+
+
+Town List
+
+
+When town list type is selected the dialog displays all of the towns the Player controls in a listbox.
+
+
+(NOTE: Double clicking the left mouse button on a town list entry will activate the Town Control for that town if all movement for round has been completed.)
+
+
+Each town entry has certain information displayed.
+
+
+Town Name  The name of town.
+
+
+Location  Where on the map the town is located in coordinates.
+
+
+Def  The Defense of the town.
+
+
+Tech  The Technology of the town.
+
+
+Population  The population of the town.
+
+
+Soldiers  The number of soldiers that are currently in the town.
+
+
+List Type
+
+
+These checkboxes are used to select the current list type.
+
+
+Units  This selects the Unit List.
+
+
+Towns  This selects the Town List.
+
+
+Reports
+
+
+This section describes the various reports that are used to keep track of the progress of the game.
+
+
+Leader Detail
+
+
+This dialog is used to get a close look at the current status of a leader in the game.
+
+
+(NOTE: Leaders are ordered by the way they were added to the game. Some sections will not be visible for the Leader.)
+
+
+For the Selected Leader, the Following is Listed:
+
+
+Leader Name  The name of the currently selected unit.
+
+
+Leader is Located At../was Defeated by..  During a game, the information displayed here is determined by the currently selected leader's status. If leader is active, the leader's location is displayed in coordinates, and if located in a town, the name of the town the leader is in (The capital). If leader has been defeated, the name of the leader that defeated this leader and the round defeated in are displayed. If this dialog is activated from Hall of Fame then only the leader defeat information would be displayed, if leader was defeated.
+
+
+Unit Colors
+
+The two graphics in the upper right hand section of the dialog display the Unit colors (the left graphic) and the Sector color (the right graphic) that is used to display ownership of a sector in Sector Ownership.
+
+
+Computer Leader Settings
+
+These settings will only be visible in this dialog when a Computer leader is the selected leader.
+
+See section Leader for description of Attack Style, Funding Type, and Temperament
+
+
+Army Detail
+
+This section gives details on the leader's current military status.
+
+
+Army Leadership  This stat increases with unit victories and decreases with defeats. It will positively or negatively affect the leader's units in combat depending on whether the stat itself is positive or negative.
+
+
+Units  The number of units under the leader's control as of the end of the last round.
+
+
+Soldiers  The number of soldiers under the leader's control as of the end of the last round.
+
+
+Land Ruled
+
+This section gives details on the portion of the map the leader controls.
+
+
+Towns  The number of towns under the leader's control as of the end of the last round.
+
+
+Sectors  The number of sectors under the leader's control as of the end of the last round.
+
+
+Population  The number of people, in the towns, under the leader's control as of the end of the last round.
+
+
+Reaction To Other Leaders
+
+(Computer Leaders only)
+
+
+Each Computer leader has a relationship to each other leader in the game. This relationship can influence which towns a leader will attack in a round. A leader is more likely to attack a leader that it has a strongly negative feeling for as opposed to a neutral one. The best Reaction a leader can have to another is Neutral, the worst is MUST KILL.
+
+
+Town Averages
+
+This section contains the averages of the town attributes Technology, Defense and Population for the towns under the leader's control.
+
+
+Army Combat Statistics
+
+
+This dialog box simply displays the combat totals of all leaders as they currently stand.
+
+
+(Note: Leaders are listed in score ranking and double clicking on an entry activates the Leader Detail for that leader.)
+
+
+For Each Leader, the Following is Listed:
+
+
+Leader  Name of leader.
+
+
+Soldiers Killed  Number of enemy soldiers killed by units of this leader.
+
+
+Soldiers Lost  Number of soldiers of this leader that have been killed.
+
+
+Unit Wins  Number of units destroyed by units of this leader.
+
+
+Unit Losses  Number of units of this leader that have been destroyed.
+
+
+Towns Conquered  Number of towns that this leader has captured away from the other leaders. This does not include towns gained from surrender.
+
+
+Towns Lost  Number of towns that this leader has had captured away by other leaders in combat.
+
+
+Changes From Previous Round
+
+
+This dialog box simply displays a summary of the changes in leader status during the last round of game play.
+
+
+(Note: Leaders are listed in score ranking and double clicking on an entry activates the Leader Detail for that leader.)
+
+
+For Each Leader, the Following is Listed:
+
+
+Leader  Name of leader.
+
+
+Income  Difference in the last collection of taxes from the round before. This is influenced by changes in town ownership and population. NOTE: Loss or gain of a town or sector will be reflected in the following round's collection.
+
+
+Soldiers  Difference in the number of leader's soldiers from the round before.
+
+
+Units  Difference in the number of leader's units from the round before.
+
+
+Towns  Difference in the number of ruled towns of the leader from the round before.
+
+
+Sectors  Difference in the number of controlled sectors of the leader from the round before.
+
+
+Population  Difference in the total population of all leader ruled towns from the round before.
+
+
+Tech  Difference in the average Technology of all leader ruled towns from the round before.
+
+
+Def  Difference in the average Defense of all leader ruled towns from the round before.
+
+
+Leader Summary
+
+
+This dialog box simply displays a summary of the leaders' status and everything under their rule.
+
+
+(Note: Leaders are listed in score ranking and double clicking on an entry activates the Leader Detail for that leader.)
+
+
+For Each Leader, the Following is Listed:
+
+
+Leader  Name of leader.
+
+
+Score  The score of this leader.
+
+
+Income  Total amount of money that was gathered from taxes at the end of the last round.
+
+
+Units  Number of active units that this leader controls.
+
+
+Towns  Number of towns that this leader currently rules.
+
+
+Sectors  Number of sectors that this leader currently has control of.
+
+
+Population  Cumulative population of all towns currently ruled by this leader.
+
+
+Tech  Average Technology rating of all towns currently ruled by this leader.
+
+
+Def  Average Defense rating of all towns currently ruled by this leader.
+
+
+Sector Ownership
+
+
+This dialog box displays a graphical representation of sector ownership.
+
+
+The colored boxes indicate which leader controls which sectors (these are the colors that appear next to the unit colors in the Leader Detail dialog).
+
+
+Dark Green Boxes indicate that no leader has total control over the sector.
+
+
+Leader's Hall of Fame
+
+
+This dialog displays a history of past completed games allowing the Player to access the game information using the reporting dialogs.
+
+
+Game List
+
+This is the actual list of past games that contained a high enough score to enter into the top 20 games.
+
+
+(NOTE: Double clicking the left mouse button on a list entry will activate Reports for that game.)
+
+
+High Scoring Leader  The leader who had the highest score of the current saved game.
+
+
+Score  The highest score of the current saved game.
+
+
+Winning Leader  The winning leader of the current saved game. If Player was defeated the highest scoring Computer leader's name will be here.
+
+
+Leaders  The number of leaders that played in the current saved game.
+
+
+Description  A text description that can be changed to identify the current saved game.
+
+
+Difficulty  The Difficulty that was selected for the current saved game.
+
+
+Game Rounds  The number of rounds in length of the current saved game.
+
+
+Grid Size  The Grid Size that was selected for the current saved game.
+
+
+Towns in Game  The number of towns that was selected of the current saved game.
+
+
+Sector Layout  The Sector Layout that was selected for the current saved game.
+
+
+Date and Time of Game  The Date and Time that the current saved game was entered into the Hall of Fame.
+
+
+Strategy
+
+
+This section is to provide help to new Players of Warfare. It is important to note that the Computer leader will follow these strategies.
+
+
+Basic Strategies
+
+
+Some basic combat laws that should be followed in any type of wargame.
+
+
+Before attack, solidify your defense against the possibility of enemy counter attack.
+
+
+Strike where your enemy is weakest.
+
+
+Never fight an even battle.
+
+
+Divide and conquer.
+
+
+Protect the leader at all costs.
+
+
+One type of unit, for one type of task.
+
+
+(NOTE: Computer leaders follow these like gospel!)
+
+
+Starting A New Game
+
+
+When starting a new game of Warfare, the Player's single unit, the Command Unit containing the leader, begins at a randomly selected spot on the map just as the Computer leader(s).
+
+
+The first concern, at this point, is to take control of a town so the production of other units and the collection of taxes can begin.
+
+
+Before moving, use the detailed town views to identify the highest technology town that is near the unit.
+
+
+Getting a high technology town to begin the game is very important, since it will dictate the Rating and, very importantly, the Movement of the first units to be created.
+
+
+When the leader unit is in a town, defend that town. If the Player's leader unit is beaten, the game is over.
+
+
+Growth Without Combat
+
+
+At the beginning of a game, the Player should concentrate on taking over as many neutral towns as possible before engaging in combat with the other leaders.
+
+
+This will allow the Player's leader to gain a bigger round collection of taxes, build up defenses, and even build an invasion force while the Computer leader(s) also act(s) unaggressively.
+
+
+This is a good idea since the Computer leaders will do this.
+
+
+The best strategy is to send out small fast units to take as many neutral towns as possible, without engaging in combat.
+
+
+When going after towns, choose those that are in sectors that are adjacent to sectors that are already controlled by the Player's leader.
+
+
+The more adjacent sectors that are controlled by a leader, the greater the amount of taxes the towns in these sectors will produce.
+
+
+Once the number of neutral towns is small, then the Computer leaders will begin to act aggressively.
+
+
+Protect Against Attack
+
+
+Even in the beginning of the game, when the Computer leader(s) are not acting aggressively, the Player should create units to defend the towns it controls.
+
+
+The Computer leader(s) will always be building up their defenses by creating units in each of their towns to ward off attack.
+
+
+When they decide to get aggressive, the Player had better be ready because there could be no warning at all.
+
+
+Not being ready = short game!
+
+
+VERY IMPORTANT: Make very sure that the capital is well defended. Defeat of the Player's leader unit ends the game.
+
+
+Contributing To Town Funds
+
+
+After the Player has gathered a number of towns and is collecting a decent amount of taxes each round, the contributions to the town funds should begin.
+
+
+These funds are: Civil Fund, Defense Fund, Technology Fund and Unit Defense Fund.
+
+
+There are different ways to contribute to the funds: Town Control, Town Investment and Additional Town Investment. See Funding section in Ruling Towns for more.
+
+
+If the Player decides not to contribute to these funds, the Computer leader(s) will have a big advantage. They will have greater populations (which means more tax money to spend), better fortified town defenses and faster, more powerful combat units capable of moving without detection (unless playing with Easy Difficulty).
+
+
+The Player can use Leader Summary to watch the Population, Average Defense and Average Technology of each leader.
+
+
+A leader, who has the highest values in these, is near impossible to defeat.
+
+
+Attack For The Increase Of Taxes
+
+
+When all the neutral towns are taken, or the Player just feels violent, the attacks can begin.
+
+
+Do not attack randomly, however.
+
+
+Attack to control adjacent sectors to increase the output of taxes.
+
+
+Concentrate first on sectors shared with Computer leaders, because they sure will.
+
+
+Having a town in a sector with a Computer controlled town means that it is just a matter of time before it is attacked.
+
+
+The more adjacent sectors a leader controls, the more taxes the towns in these sectors will produce. (Hint...Hint...Good way to hurt a large Computer empire to would be to break it up.)
+
+
+Stacking/Merging Units
+
+
+If a leader has multiple units in a single location, even in a town, then during a combat, depending of the combat location of the units, merging stacked units can be an effective form of defense or attack.
+
+
+In the situation of attacking a town, whose defenses the Player has under estimated, it can have the attacking unit wait outside the town until another unit arrives to reinforce the previous attacker. Then, with two or more units just outside an enemy town, attack, merge stacked units, and conquer.
+
+
+If the Player is building an invasion unit in a town that is under attack, merging may be the best strategy rather than allowing multiple units to be attacked individually.
+
+
+Enemy units will always use this stacking approach to conquer an enemy town. However, if their units have a higher technology then the Player's units are capable of detecting, their lack of Visibility will mean they will be seen too late for the town.
+
+
+Leader units will not be merged. 
+
+
+Units whose total cost is less than one soldier of the merge-to unit, will be ignored in a stack.
+
+
+Even in a no chance situation, merge units. Individual kills increase the leadership rating of attacking units and the leader making both harder to defeat.
+
+
+Capturing A Capital
+
+
+This is the single best method of gaining sectors, towns and units to protect them. As well as the way the game is won.
+
+
+A leader's capital is defined as where the leader unit is.
+
+
+The capitals usually have the greatest technology, defense and population of any town the leader controls (maybe not, though, do to events) . A Computer leader's capital has at least two units (Command unit, and a defender).
+
+
+A Computer leader's capital is always the best protected of any other town.
+
+
+If any leader defeats a Computer leader's defenses in the capital, the defending leader will surrender and offer all his money, units and towns to be spared.
+
+
+If the Player does not accept the surrender, the Player will not gain control of the units and towns of the defeated leader. The units will be disbanded and the towns will become neutral. However, not accepting a Computer leader's surrender will improve the relationship between the Player and the other Computer leaders in the game.
+
+
+A Computer leader who defeats the Player, ends the game.
+
+
+Defeating the smallest leaders in the early stages of the game is a good way to get money and grow an empire.
+
+
+Capturing capitals is necessary to win the game since the Player can only win if all the Computer leaders are defeated.
+
+
+Game Options
+
+
+This dialog box is used to change game settings and display characteristics.
+
+
+Combat Delay Speed
+
+This scrollbar is used to alter the speed at which a combat takes place. Increasing this value will cause combat to occur at a slower rate so it can be observed more carefully. Decreasing this value will speed up the rate of a combat.
+
+
+Move Delay Speed
+
+This scrollbar is used to alter the speed at which unit movement takes place. Increasing this value will cause unit movement to occur at a slower rate so it can be observed more carefully. Decreasing this value will speed up the rate of unit movement. NOTE: Only use this if the movement of units is too fast.
+
+
+Arrogant Messages
+
+Checking this box will allow the display of arrogant messages after the Player completes a combat with a Computer leader.
+
+
+Draw Sector Borders
+
+Checking this box will allow the Player to toggle on and off the drawing of the sector border lines. These lines appear on the main screen map and on Full Map View.
+
+
+Town Events
+
+Checking this box will allow the occurrance of events in the game. These events can harm or benefit both the Player and the Computer leader(s).
+
+
+Unit Default Orders
+
+Checking this box will mean that newly created units, that are built with the assistance of the form buttons, will have the default orders of the last form that was used. Unit will keep these orders until changed, or destroyed.
+
+
+View All Battles
+
+Checking this box will allow the Player to observe battles taking place between other leaders.
+
+
+Watch Computer Moves
+
+Checking this box will allow the Player to observe unit moves made by other leaders. If any difficulty but Easy is used, then whether the unit can be seen moving depends on the visiblity of the unit to the user's units.
+
+
+Watch User Moves
+
+Checking this box will allow the Player to observe its unit moves .
+
+______________________________________________________________________________
+
+
+Glossary
+
+
+* Armor
+
+Armor of a unit is used to indicate the amount of damage it can take. Units created can have a maximum Armor of the Technology of the town in which they were created or upgraded.
+
+
+* Arrogant Messages
+
+Arrogant Messages are displayed after the Player completes a combat with a Computer leader. No matter what the result of the combat, the messages are a way for the Computer to verbally (but not nastily) abuse the Player.
+
+
+* Civil Fund
+
+The Civil Fund influences the population of a town. If there is less money than people then the population will down. More money in the fund attracts people.
+
+
+* combat location
+
+The combat location depends on whether the involved unit is attacking or defending. If the unit is defending, then the combat location is the place being defended. If the unit is attacking, then the combat location is the place the unit is attacking from.
+
+
+* Defense
+
+Defense of a town is used to indicate the level fortification. This will influence a unit's defending ability during an attack on the town.
+
+
+* Defense Fund
+
+The Defense Fund pays for fortification of the town defense. Every contribution moves the town closer to the next level of defense.
+
+
+* Events
+
+There is a one in one hundred chance that a ruled town will experience an Event. Events can be beneficial or damaging to a town. Events range from a brilliant advance, that greatly increases a town's Defense and Technology, to an earthquake that can devastate a town.
+
+
+* Leader
+
+The Leaders are those who are actually controlling the armies, both Player and Computer leader(s). The Leaders are represented in the game as the starting unit 'Command Unit'. The Leader can be moved to another unit by the Player but the Computer leaders will not. Defeat of the unit containing an army's Leader will remove that army from the game.
+
+
+* Movement
+
+Movement of a unit is used to indicate the number of spaces it can move in a single round. This will also influence a unit's fighting and defending abilities. Units created can have a maximum Movement of one plus the Technology of the town in which they were created or upgraded divided by five.
+
+
+* Rating
+
+The Rating the value that appears on the unit with the Movement. Unit Rating is calculated by the totaling of the Strength, the Armor and the Technology of the unit.
+
+
+* Round
+
+The Round is the time indicator that controls the game. A Round starts with a movement phase in which all units that will move are going to move. Then the Player and the Computer leader(s) will spend tax money on armies and funding, as well as give orders to units to move in the next Round. Player must manually end each Round by selecting the END TURN button on the Command Bar or by typing the 'E' key from the main screen.
+
+
+* Sector
+
+The map is divided into a grid of Sectors. Each Sector contains at least one town. Controlling all towns inside a Sector means that the leader rules that Sector. Ruling a sector increases the tax output of the towns inside and around the Sector that are controlled by the leader. Adjacent controlled Sectors increase taxes even more.
+
+
+* Strength
+
+Strength of a unit is used to indicate the amount of damage it can inflict. This will also some what influence a unit's defending ability. Units created can have a maximum Strength of the Technology of the town in which they were created or upgraded.
+
+
+* Taxes
+
+Taxes are the ultimate resource in the game. Taxes allow the leaders to build armies, improve towns by funding, and maintain both the armies and the towns under their control. Taxes are collected based on the total population of the towns ruled by each leader. Then the Taxes are increased by the sector control. The more sectors controlled by the leader around the town's sector (including the town's sector) increase the taxes a town will produce.
+
+
+* Technology
+
+Technology of a unit or a town is used to indicate the technological level. This will influence a unit's fighting, defending, hiding and detection abilities. This will influence a town's fighting, defending and detection abilities. Units created can have a maximum Technology of the town in which they were created or upgraded.
+
+
+* Technology Fund
+
+The Technology Fund pays for the research and development needed to increase the town technology. Every contribution moves the town closer to the next level of technology.
+
+
+* Terrain
+
+There are five different types of Terrain in Warfare: Grassy plain, Forest, Mountains, Desert and Water. In this initial version of Warfare, the terrain is for decoration and reference only. (A future version of this game will use the Terrain)
+
+
+* Town
+
+A Town defines the strategic aspect of the game. Ruling towns is how leaders build their armies and collect their taxes. Towns are ruled by the leader who has a unit in the town. Towns without a unit present are neutral.
+
+
+* Unit
+
+A Unit defines the military aspect of the game. Units control town rulership, are used for attacks on enemy towns and provide defense against enemy attack. Units, other than the starting 'Command Unit,' are built in towns controlled by their leader.
+
+
+* Unit Defense Fund
+
+The Unit Defense Fund is used to distribute money to all a leader's towns to increase the unit strength of each town's unit defender.
+
+
+* Unit strength
+
+Unit Strength is the Rating of a unit multiplied by the number of soldiers in the unit.
+
+
+* Visibility
+
+Defines how or if enemy units are actually seen by Player. There are two levels of units being seen: spotted and detailed. A spotted unit means that the unit has been seen and its leader identified. Detailed means that in addition to the spotted information, the unit rating and number of soldiers has also been identified. Technology of the hider and the spotter influences the result.
+
+
+nce a unit's fighting and defending abilities. Units created can have a maximum Movement of one plus the Tec

@@ -1,0 +1,16 @@
+If you experience problems that you think are related to your video
+card, you can turn off the 256 color screens. This has fixed a rare
+situation of problems.
+
+Since the 256 color bitmaps are not currently used during game play,
+this does not detract from the game.
+
+In file warfare.ini, in your \WINDOWS directory, set the following
+variable exactly like this.
+
+Color16Mode=Yes
+
+If your experience any problems at all, please report them to us.
+
+
+Carric Moor Games
